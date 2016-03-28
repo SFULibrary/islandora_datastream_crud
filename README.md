@@ -1,4 +1,4 @@
-# Islandora Datastream CRUD
+# Islandora Datastream CRUD [![Build Status](https://travis-ci.org/mjordan/islandora_datastream_crud.png?branch=7.x)](https://travis-ci.org/mjordan/islandora_datastream_crud)
 
 Islandora Drush module for performing Create, Read, Update, and Delete operations on datastreams.
 
