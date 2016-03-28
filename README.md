@@ -54,7 +54,7 @@ This is a real step. Skip it at your own peril, doom, and ruin.
 
 * It is extremely important that you are sure the datastream files you have modified or prepared are ready to push to your repository.
 * You should perform the same types of QA and checking on these files that you perform prior to doing a batch ingest (validate the MODS, etc.).
-* It is wise to push a small number of sample datastream files to your repository before pusing the entire set, or push the datastream files in small subsets and perform QA on the modified datastreams in your repository before pushing more.
+* It would be prudent to push a small number of test datastream files to your repository before pusing the entire set, and to push the datastream files in small subsets and perform QA on the modified datastreams in your repository before pushing more.
 
 ### Creating new datastreams
 
@@ -81,6 +81,7 @@ example:5782
 // So will this one.
 islandora:948
 someothernamespace:1
+someothernamespace:2
 ```
 
 After you generate the PID file, you are free to add additional PIDS or delete PIDS. You don't even need to generate a PID file using the `islandora_datastream_crud_fetch_pids` command as long as your file contains one PID per line.
@@ -105,7 +106,7 @@ Islandora reacts to the replacement of a datastream or the addition of a new dat
 * `islandora_datastream_crud_push_datastreams` does not change the MIME type of the datastream unless the `--datastreams_mimetype` is present.
 * `hook_islandora_datastream_modified()`, `hook_islandora_datastream_ingested()`, and their variations are fired when datastreams are replaced or created. The effects of this will depend on what modules are enabled on your Islandora site.
 
-In general, the behaviors described here are the same regardless of whether the datastream is replaced using the "Replace" link provided in each object's Manage > Datastreams tab (or using the "+ Add a datastream" link), or with this module.
+In general, the behaviors described here are the same regardless of whether the datastream is replaced using the "Replace" link provided in each object's Manage > Datastreams tab (or using the "+ Add a datastream" link), or with this module. However, Islandora Datastream CRUD lets you replace the same datastream across a lot of objects at once, which amplifies the load on your Islandora stack compared to replacing a datastream on a single object.
 
 # Maintainer
 
