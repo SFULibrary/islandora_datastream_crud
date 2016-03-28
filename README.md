@@ -1,4 +1,4 @@
-# Islandora Datastream CRUD [![Build Status](https://travis-ci.org/mjordan/islandora_datastream_crud.png?branch=7.x)](https://travis-ci.org/mjordan/islandora_datastream_crud)
+# Islandora Datastream CRUD 
 
 Islandora Drush module for performing Create, Read, Update, and Delete operations on datastreams.
 
@@ -25,13 +25,13 @@ The `islandora_datastream_crud_fetch_pids` command provides several options for 
 * `--content_model`: Lets you specify a content model PID.
 * `--solr_query`: A raw Solr query. For example, `--solr_query=*:*` will retrieve all the PIDs in your repository. `--solr_query=dc.title:foo` will retrieve all the PIDs of objects that have the string 'foo' in their DC title fields.
 
-The `--collection`, `--content_model`, `--namespace`, and `--solr_query` options, if present, are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific namespace with a collection. If the --solr_query option is used, it overrides --content_model, --namespace, and --collection.
+The `--collection`, `--content_model`, `--namespace`, and `--solr_query` options, if present, are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific namespace with a collection. If the `--solr_query` option is used, it overrides `--content_model'`, `--namespace`, and `--collection`.
 
 You typically save the fetched PIDs to a PID file, whose path is specified using the `--pid_file` option. See 'The PID file' section below for more information.
 
 ## Workflows
 
-A general workflow when using this module is:
+The general workflow when using this module is:
 
 1. Fetch some PIDs from Islandora.
 2. Fetch a specific datastream from each of the objects identified by your PIDs (this saves the datastream content in a set of files, one per datasteram).
@@ -52,17 +52,17 @@ You may not find a use for these two scripts, but they illustrate the kinds of t
 
 This is a real step. Skip it at your own peril, doom, and ruin.
 
-* It is very important that you are sure the datastream files you have modified or prepared are ready to push to your repository.
+* It is extremely important that you are sure the datastream files you have modified or prepared are ready to push to your repository.
 * You should perform the same types of QA and checking on these files that you perform prior to doing a batch ingest (validate the MODS, etc.).
-* You may want to push a small number of sample datastream files to your repository before pusing the entire set, or push the datastream files in small subsets and perform QA on the modified datastreams in your repository before pushing more.
+* It is wise to push a small number of sample datastream files to your repository before pusing the entire set, or push the datastream files in small subsets and perform QA on the modified datastreams in your repository before pushing more.
 
 ### Creating new datastreams
 
-A subset of the workflow outlined above adds new (i.e., previously nonexistent) datastreams to a set of objects. In this case, you would not fetch datastream files from Islandora, you would prepare the new datastream files from scratch, and name them using the required filenames. You would then issue an `islandora_datastream_crud_push_datastreams` command to add them to the objects identified in the filenames. You would most likely also want to provide a label for your new datastreams with the `--datastreams_label` option.
+A subset of the workflow outlined above adds new (i.e., previously nonexistent) datastreams to a set of objects. In this case, you wouldn't fetch datastream files from Islandora, you would prepare the new datastream files using some external process, and name them using the required filenames. You would then issue an `islandora_datastream_crud_push_datastreams` command to add them to the objects identified in the filenames. You would most likely also want to provide a label for your new datastreams with the `--datastreams_label` option.
 
 ### Deleting datastreams
 
-Another subset of the general workflow in which you do not fetch datastreams is to delete a datastream from a set of objects. To do this, you only need to specify the objects you want to delete the datastream from in the PID file.
+Another subset of the general workflow in which you do not fetch datastreams is to delete a datastream from a set of objects. To do this, you only need to specify the objects you want to delete the datastream from in the PID file, and the datastream ID you want to delete.
 
 ### Exporting datastreams
 
@@ -89,7 +89,7 @@ Lines in the PID file beginning with `#` or `//` are ignored.
 
 ## The datastream files
 
-`islandora_datastream_crud_fetch_datastreams` will write the content of the fetched datastreams into the location specified in `--datastreams_directory` with filenames containing the object's PID and the datastream ID in the form `namespace_restofthepid_dsid.ext`. The colon in the PID is replaced with an underscore, and the datastream ID is separated from the PID with an underscore. For example, the MODS datastream from object islandora:11 would be saved as `islandora_11_MODS.xml`.
+`islandora_datastream_crud_fetch_datastreams` will write the content of the fetched datastreams into the location specified in `--datastreams_directory` with filenames containing the object's PID and the datastream ID in the form `namespace_restofthepid_dsid.ext`. The colon in the PID is replaced with an underscore, and the datastream ID is separated from the PID with another underscore. For example, the MODS datastream from object islandora:11 would be saved as `islandora_11_MODS.xml`.
 
 If `--datastreams_extension` is present, filenames are given its value as their extension. If it is absent, Islandora will assign an extension based on the datastream's MIME type.
 
@@ -99,13 +99,13 @@ As mentioned above, datastream files do not need to be created using `islandora_
 
 Islandora reacts to the replacement of a datastream or the addition of a new datastream in several ways:
 
-* Datastreams are versioned in Islandora. Pushing datastreams results in the pushed file content becoming the latest version of the specified datastream. It is possible to revert to a previous version of a datastream using the 'revert' option within an object's datastream management tab, but this module does *not* provide a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams`.
+* Datastreams are versioned in Islandora. Pushing datastreams results in the pushed file content becoming the latest version of the specified datastream. It is possible to revert to a previous version of a datastream using the 'revert' option within an object's datastream management tab, but this module does *not* provide a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams`. If you push 10,000 MODS datastreams to your prepository using this module and you discover that each one contains a small problem, you'll need to revert 10,000 datastreams manually. Or, push a new set of MODS XML datastream files that do not have the same problem.
 * Replacing MODS and other datastreams indexed in Solr triggers a reindexing of that object.
 * Replacing the OBJ datastream, or any other datastream from which other datastreams are derived, triggers derivative regeneration as defined by solution packs and other modules. If you do not want derivatives generated as a result of pushing datastreams to your repository, enable "Defer derivative generation during ingest" option in your site's Islandora > Configuration menu. If you enable this option, don't forget to disable after your have pushed your datastreams.
 * `islandora_datastream_crud_push_datastreams` does not change the MIME type of the datastream unless the `--datastreams_mimetype` is present.
 * `hook_islandora_datastream_modified()`, `hook_islandora_datastream_ingested()`, and their variations are fired when datastreams are replaced or created. The effects of this will depend on what modules are enabled on your Islandora site.
 
-In general, these behaviors are the same regardless of whether the datastream is replaced using the "Replace" link provided in each object's Manage > Datastreams tab (or using the "+ Add a datastream" link), or with this module.
+In general, the behaviors described here are the same regardless of whether the datastream is replaced using the "Replace" link provided in each object's Manage > Datastreams tab (or using the "+ Add a datastream" link), or with this module.
 
 # Maintainer
 
@@ -113,7 +113,7 @@ In general, these behaviors are the same regardless of whether the datastream is
 
 ## Development and feedback
 
-Pull requests are welcome, as are use cases and suggestions. Scripts that "do the work" of updating datastreams, especially for MODS datastreams, are also welcome.
+Pull requests are welcome, as are use cases and suggestions. Scripts that do the work of updating datastreams, especially for MODS datastreams, are also welcome.
 
 ## Wishlist
 

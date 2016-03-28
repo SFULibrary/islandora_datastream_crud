@@ -11,6 +11,7 @@
 function islandora_datastream_crud_drush_command() {
   $items = array();
   $items['islandora_datastream_crud_fetch_pids'] = array(
+    'aliases' => array('idcrudfp'),
     'description' => 'Fetch PIDs from Islandora for the objects whose datastreams you want to update. The `--collection`, `--content_model`, `--namespace`, and `--solr_query` options, if present, are ANDed together.',
     'examples' => array(
       'drush islandora_datastream_crud_fetch_pids --user=admin --collection=islandora:sp_basic_image_collection --pid_file=/tmp/imagepids.txt',
@@ -36,6 +37,7 @@ function islandora_datastream_crud_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
   $items['islandora_datastream_crud_fetch_datastreams'] = array(
+    'aliases' => array('idcrudfd'),
     'description' => 'Fetch files from Islandora corresponding to the datastreams you want to update.',
     'examples' => array(
       'drush islandora_datastream_crud_fetch_datastreams --user=admin --pid_file=/tmp/imagepids.txt --dsid=MODS --datastreams_directory=/tmp/imagemods',
@@ -64,6 +66,7 @@ function islandora_datastream_crud_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
   $items['islandora_datastream_crud_push_datastreams'] = array(
+    'aliases' => array('idcrudpd'),
     'description' => 'Add or replace datastrems. This operation writes datastreams to objects in your repository,',
     'examples' => array(
       'drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagecollection_objs',
@@ -95,6 +98,8 @@ function islandora_datastream_crud_drush_command() {
   );
 
   $items['islandora_datastream_crud_delete_datastreams'] = array(
+    'aliases' => array('idcruddd'),
+    'description' => 'Add or replace datastrems. This operation writes datastreams to objects in your repository,',
     'description' => 'Delete datastreams. This operation objects in your repository,',
     'examples' => array(
       'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --pid_file=/tmp/delete_foo_from_these_objects.txt',
