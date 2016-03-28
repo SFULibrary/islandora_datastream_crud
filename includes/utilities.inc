@@ -1,0 +1,259 @@
+<?php
+
+/**
+ * @file
+ * Utilities.
+ */
+
+/**
+ * Queries Islandora's Solr index to get a list of PIDs.
+ *
+ * The object is the one corresponding to the alias and pointer.
+ *
+ * @param string $query
+ *   The query to send to Solr.
+ *
+ * @return array
+ *   An array containing all of the PIDs matching $query.
+ */
+function islandora_datastream_crud_query_solr($query) {
+  $pids = array();
+  $query_processor = new IslandoraSolrQueryProcessor();
+  $query_processor->solrQuery = $query;
+  // Some silly number.
+  $query_processor->solrLimit = '1000000';
+  $query_processor->executeQuery(FALSE);
+  if ($query_processor->islandoraSolrResult['response']['numFound'] > 0) {
+    drush_log(dt('!num matching objects found.',
+      array('!num' => $query_processor->islandoraSolrResult['response']['numFound'])), 'ok');
+    foreach ($query_processor->islandoraSolrResult['response']['objects'] as $object) {
+      $pids[] = $object['solr_doc']['PID'];
+    }
+  }
+  return $pids;
+}
+
+/**
+ * Retrieves the content of a datastream and saves it to a file.
+ *
+ * @param string $pid
+ *   The PID of the current Islandora object.
+ * @param string $dsid
+ *   The DSID of the datastream to be retrieved.
+ * @param string $dir
+ *   The directory to save the datastream content in.
+ *
+ * @return bool
+ *   TRUE on successful saving of the content, FALSE otherwise.
+ */
+function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
+  if (!islandora_object_load($pid)) {
+    drush_set_error('IBD_COLLECTION_NOT_FOUND',
+      dt('The specified object (!pid) does not exist or is not accessible.',
+      array('!pid' => $pid)));
+    return FALSE;
+  }
+  else {
+    $object = islandora_object_load($pid);
+    if ($object[$dsid]) {
+      if (drush_get_option('datastreams_extension')) {
+        $extension = drush_get_option('datastreams_extension');
+      }
+      else {
+        module_load_include('inc', 'islandora', 'includes/mimetype.utils');
+        $extension = islandora_get_extension_for_mimetype($object[$dsid]->mimetype);
+      }
+      $ds = $object[$dsid];
+      $normalized_pid = preg_replace('/:/', '_', $pid);
+      $path = $dir . DIRECTORY_SEPARATOR . $normalized_pid . '_' .
+        $dsid . '.' . $extension;
+      $ds->getContent($path);
+      return TRUE;
+    }
+  }
+}
+
+
+/**
+ * Retrieves the content of a datastream and saves it to a file.
+ *
+ * @param string $ds_path
+ *   The absolute path to the datastream content.
+ *
+ * @return string|bool
+ *   The PID of the object the datastream was added to, FALSE otherwise.
+ */
+function islandora_datastream_crud_push_datastream($ds_path) {
+  $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
+  list($namespace, $number, $dsid) = explode('_', $ds_filename);
+  $pid = islandora_datastream_crud_dsfilename_to_pid($ds_filename);
+  module_load_include('inc', 'islandora', 'includes/utilities');
+
+  if (!islandora_is_valid_pid($pid)) {
+    drush_set_error('PID_IS_INVALID', dt('The PID (!pid) is not valid.',
+      array('!pid' => $pid)));
+    return FALSE;
+  }
+
+  try {
+    drupal_static_reset('islandora_get_tuque_connection');
+    $connection = islandora_get_tuque_connection();
+    $repository = $connection->repository;
+  }
+  catch (Exception $e) {
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+
+  if (!islandora_object_load($pid)) {
+    drush_set_error('OBJECT_DOES_NOT_EXIST',
+      dt('The specified object (!pid) does not exist or is not accessible.',
+      array('!pid' => $pid)));
+    return FALSE;
+  }
+  else {
+    $object = islandora_object_load($pid);
+    $ds = isset($object[$dsid]) ? $object[$dsid] : $object->constructDatastream($dsid);
+    $ds->setContentFromFile($ds_path);
+    if (drush_get_option('datastreams_mimetype')) {
+      $ds->mimetype = drush_get_option('datastreams_mimetype');
+    }
+    if (drush_get_option('datastreams_label')) {
+      $ds->label = drush_get_option('datastreams_label');
+    }
+    try {
+      $object->ingestDatastream($ds);
+      drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
+      islandora_datastream_crud_write_crudlog($pid, $dsid, 'pushed');
+      return $pid;
+    }
+    catch (Exception $e) {
+      drush_log(dt("!dsid datastream could not be pushed to object !pid; details below",
+        array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+      islandora_datastream_crud_write_crudlog($pid, $dsid, 'not pushed');
+      drush_log($e->getMessage(), 'error');
+      return FALSE;
+    }
+  }
+}
+
+/**
+ * Deletes a datastream from an object.
+ *
+ * @param string $pid
+ *   The PID of the object to delete the datastream from.
+ * @param string $dsid
+ *   The ID of the datastream to delete.
+ *
+ * @return bool
+ *   TRUE if the deletion was successful, FALSE if not.
+ */
+function islandora_datastream_crud_delete_datastream($pid, $dsid) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  if (!islandora_is_valid_pid($pid)) {
+    drush_set_error('PID_IS_INVALID', dt('The PID (!pid) is not valid.',
+      array('!pid' => $pid)));
+    return FALSE;
+  }
+
+  try {
+    drupal_static_reset('islandora_get_tuque_connection');
+    $connection = islandora_get_tuque_connection();
+    $repository = $connection->repository;
+  }
+  catch (Exception $e) {
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+
+  if (!islandora_object_load($pid)) {
+    drush_set_error('IBD_COLLECTION_NOT_FOUND',
+      dt('The specified object (!pid) does not exist or is not accessible.',
+      array('!pid' => $pid)));
+    return FALSE;
+  }
+  else {
+    $object = islandora_object_load($pid);
+    try {
+      if ($object->purgeDatastream($dsid)) {
+        drush_log(dt("!dsid datastream purged from object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'deleted');
+        return TRUE;
+      }
+      else {
+        drush_log(dt("!dsid datastream not purged from object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'not deleted');
+        return FALSE;
+      }
+    }
+    catch (Exception $e) {
+      drush_log(dt("Error purging !dsid datastream from object !pid; details below.",
+        array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+      drush_log($e->getMessage(), 'error');
+      islandora_datastream_crud_write_crudlog($pid, $dsid, 'not deleted');
+      return FALSE;
+    }
+  }
+}
+
+/**
+ * Returns a list of PIDs from a PID file.
+ *
+ * @param string $pid_file_path
+ *   The absolute path to the PID file.
+ *
+ * @return array
+ *   A list of PIDs.
+ */
+function islandora_datastream_crud_read_pid_file($pid_file_path) {
+  if (!file_exists($pid_file_path)) {
+    drush_set_error('PID_FILE_NOT_FOUND',
+    dt('The specified PID file (!pid_file) does not exist.',
+      array('!pid_file' => $pid_file_path)));
+    drupal_exit();
+  }
+
+  $pids = array();
+  $lines = file($pid_file_path);
+  foreach ($lines as $pid) {
+    $pid = trim($pid);
+    // Skip commented out rows.
+    if (!preg_match('!(#|//)!', $pid)) {
+      $pids[] = $pid;
+    }
+  }
+  return $pids;
+}
+
+/**
+ * Converts a datastream filename to a PID.
+ *
+ * @param string $filepath
+ *   The datastream filepath.
+ *
+ * @return string
+ *   The corresponding PID.
+ */
+function islandora_datastream_crud_dsfilename_to_pid($filepath) {
+  $filename = pathinfo($filepath, PATHINFO_FILENAME);
+  list($namespace, $restofthepid, $dsid) = explode('_', $filename);
+  return $namespace . ':' . $restofthepid;
+}
+
+/**
+ * Writes the CRUD log.
+ *
+ * @param string $pid
+ *   The PID of the object being operated on.
+ * @param string $dsid
+ *   The datastream ID.
+ * @param string $message
+ *   The message to write to the log.
+ */
+function islandora_datastream_crud_write_crudlog($pid, $dsid, $message) {
+  if (drush_get_option('datastreams_crud_log')) {
+    $crud_log_path = drush_get_option('datastreams_crud_log');
+    $entry = $pid . ',' . $dsid . ',' . $message;
+    file_put_contents($crud_log_path, $entry . PHP_EOL, FILE_APPEND);
+  }
+}

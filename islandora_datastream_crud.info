@@ -1,0 +1,8 @@
+name = Islandora Datastream CRUD
+description = "Provides Drush commands and programming framework for performing Create, Read, Update, and Delete operations on a list of objects' datastreams."
+package = Islandora Tools
+version = 7.x-dev
+core = 7.x
+dependencies[] = islandora
+dependencies[] = islandora_solr
+files[] = includes/utilities.inc
