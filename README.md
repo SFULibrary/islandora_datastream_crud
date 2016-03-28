@@ -18,7 +18,7 @@ Commands are inspired by a simple Git workflow (fetch, push, delete).
 
 ## Fetching PIDs
 
-The `islandora_datastream_crud_fetch_pids` command allows you to specify which objects you are interested in using several options:
+The `islandora_datastream_crud_fetch_pids` command provides several options for specifying which objects you want datastreams from:
 
 * `--namespace`: Lets you specify a namespace.
 * `--collection`: Lets you specify a collection PID.
@@ -121,6 +121,7 @@ Pull requests are welcome, as are use cases and suggestions. Scripts that "do th
 * A way to roll back pushes by reverting datastream versions
 * Use the Drupal Batch framework, like the Islandora Batch modules do
 * Add tests
+* The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection
 
 ## License
 
