@@ -55,18 +55,30 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
   }
   else {
     $object = islandora_object_load($pid);
+    $normalized_pid = preg_replace('/:/', '_', $pid);
     if ($object[$dsid]) {
+      $ds = $object[$dsid];
+      // If no datastream version number is specified, Tuque gives us
+      // version 0.
+      if (drush_get_option('datastreams_version')) {
+        $version_number = drush_get_option('datastreams_version');
+        $ds = $ds[$version_number];
+      }
       if (drush_get_option('datastreams_extension')) {
         $extension = drush_get_option('datastreams_extension');
       }
       else {
         module_load_include('inc', 'islandora', 'includes/mimetype.utils');
-        $extension = islandora_get_extension_for_mimetype($object[$dsid]->mimetype);
+        $extension = islandora_get_extension_for_mimetype($ds->mimetype);
       }
-      $ds = $object[$dsid];
-      $normalized_pid = preg_replace('/:/', '_', $pid);
-      $path = $dir . DIRECTORY_SEPARATOR . $normalized_pid . '_' .
-        $dsid . '.' . $extension;
+      $ds_filename = $normalized_pid . '_' . $dsid . '.' . $extension;
+      // If a version was specified, we need to record some information about
+      // the version that was retrieved in case we want to revert to that
+      // version later.
+      if (drush_get_option('datastreams_version')) {
+        islandora_datastream_crud_write_version_data_log($dir, $ds_filename, $ds);
+      }
+      $path = $dir . DIRECTORY_SEPARATOR . $ds_filename;
       $ds->getContent($path);
       return TRUE;
     }
@@ -240,4 +252,21 @@ function islandora_datastream_crud_write_crudlog($pid, $dsid, $message) {
     $entry = $pid . ',' . $dsid . ',' . $message;
     file_put_contents($crud_log_path, $entry . PHP_EOL, FILE_APPEND);
   }
+}
+
+/**
+ * Writes attributes of a datastream version to a log.
+ *
+ * @param string $dir
+ *   The directory where the datastream content is being saved.
+ * @param string $ds_filename
+ *   The filename given to the datastream content.
+ * @param object $ds
+ *   The datastream object.
+ */
+function islandora_datastream_crud_write_version_data_log($dir, $ds_filename, $ds) {
+  $version_log_path = $dir . DIRECTORY_SEPARATOR . 'version_data.log';
+  dd($version_log_path, 'version log');
+  $entry = $ds_filename . ',' . $ds->createdDate . ',' . $ds->mimetype;
+  file_put_contents($version_log_path, $entry . PHP_EOL, FILE_APPEND);
 }

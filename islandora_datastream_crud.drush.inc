@@ -59,6 +59,9 @@ function islandora_datastream_crud_drush_command() {
       'datastreams_extension' => array(
         'description' => "Optional. The file extension, without the period, to give the datastream files. If absent, Islandora will assign an extension based on the datastream's MIME type." ,
       ),
+      'datastreams_version' => array(
+        'description' => 'Optional. The version number of the datastream. 0 is the current version (the default, so you wouldn\'t normally specify it), 1 is the previous version, 2 is the version before that, etc.' ,
+      ),
       'pause' => array(
         'description' => 'Optional. Number of seconds to pause before fetching the next datastream.' ,
       ),
