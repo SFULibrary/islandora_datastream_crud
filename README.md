@@ -121,8 +121,9 @@ Pull requests are welcome, as are use cases and suggestions. Scripts that do the
 * A graphical user interface
 * A way to roll back pushes by reverting datastream versions
 * Use the Drupal Batch framework, like the Islandora Batch modules do
-* Add tests
+* Add automated tests
 * The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection
+* Does not work with datastreams in the (R)edirect and (E)xternal Referenced control groups?
 
 ## License
 

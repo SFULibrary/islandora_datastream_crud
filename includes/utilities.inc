@@ -75,7 +75,7 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
 
 
 /**
- * Retrieves the content of a datastream and saves it to a file.
+ * Ingests a datastream.
  *
  * @param string $ds_path
  *   The absolute path to the datastream content.
@@ -95,15 +95,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     return FALSE;
   }
 
-  try {
-    drupal_static_reset('islandora_get_tuque_connection');
-    $connection = islandora_get_tuque_connection();
-    $repository = $connection->repository;
-  }
-  catch (Exception $e) {
-    drush_log($e->getMessage(), 'error');
-    return FALSE;
-  }
+  drupal_static_reset('islandora_get_tuque_connection');
 
   if (!islandora_object_load($pid)) {
     drush_set_error('OBJECT_DOES_NOT_EXIST',
@@ -156,15 +148,7 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid) {
     return FALSE;
   }
 
-  try {
-    drupal_static_reset('islandora_get_tuque_connection');
-    $connection = islandora_get_tuque_connection();
-    $repository = $connection->repository;
-  }
-  catch (Exception $e) {
-    drush_log($e->getMessage(), 'error');
-    return FALSE;
-  }
+  drupal_static_reset('islandora_get_tuque_connection');
 
   if (!islandora_object_load($pid)) {
     drush_set_error('IBD_COLLECTION_NOT_FOUND',
