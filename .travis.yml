@@ -1,3 +1,4 @@
+sudo: true
 language: php
 php:
   - 5.4
@@ -10,19 +11,15 @@ env:
 before_install:
   - cd $HOME
   - git clone -b 7.x git://github.com/Islandora/islandora.git
-  - git clone -b 7.x git://github.com/Islandora/islandora_solution_pack_collection.git
   - git clone -b 7.x git://github.com/Islandora/islandora_solr_search.git
   - export ISLANDORA_DIR=$HOME/islandora
   - $HOME/islandora/tests/scripts/travis_setup.sh
   - cd $HOME/drupal-*
-  - ln -s $HOME/islandora_solution_pack_collection sites/all/modules/islandora_solution_pack_collection
   - ln -s $HOME/islandora_solr_search sites/all/modules/islandora_solr_search
   - ln -s $TRAVIS_BUILD_DIR sites/all/modules/islandora_datastream_crud
   - drush en --yes --user=1 islandora_solr
-  - drush en --yes --user=1 islandora_basic_collection
   - drush en --yes --user=1 islandora_datastream_crud
 script:
-  - ant -buildfile sites/all/modules/islandora_datastream_crud/build.xml lint
   - $ISLANDORA_DIR/tests/scripts/line_endings.sh sites/all/modules/islandora_datastream_crud
   - drush coder-review --reviews=production,security,style,i18n,potx,sniffer islandora_datastream_crud
   - phpcpd --names *.module,*.inc sites/all/modules/islandora_datastream_crud
