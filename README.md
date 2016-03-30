@@ -1,4 +1,4 @@
-# Islandora Datastream CRUD 
+# Islandora Datastream CRUD  [![Build Status](https://travis-ci.org/mjordan/islandora_datastream_crud.png?branch=7.x)](https://travis-ci.org/mjordan/islandora_datastream_crud)
 
 Islandora Drush module for performing Create, Read, Update, and Delete operations on datastreams.
 
@@ -123,7 +123,7 @@ Pull requests are welcome, as are use cases and suggestions. Scripts that do the
 * Use the Drupal Batch framework, like the Islandora Batch modules do
 * Add automated tests
 * The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection
-* Does not work with datastreams in the (R)edirect and (E)xternal Referenced control groups?
+* Does not work with datastreams in the (R)edirect and (E)xternal Referenced control groups - use cases are welcome.
 
 ## License
 
