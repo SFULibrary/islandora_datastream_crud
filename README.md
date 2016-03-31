@@ -36,7 +36,7 @@ The general workflow when using this module is:
 1. Fetch some PIDs from Islandora.
 2. Fetch a specific datastream from each of the objects identified by your PIDs (this saves the datastream content in a set of files, one per datasteram).
 3. Update or modify the fetched datastream files.
-4. Ensure that the modified datastream files are what you want to push to your repository. This module does *not* provide a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams`.
+4. Ensure that the modified datastream files are what you want to push to your repository. This module provides a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams, but that should not prevent you from performing quality control before you push`.
 5. Push the updated datasteam files back to the objects they belong to.
 
 ### Step 3
@@ -68,6 +68,16 @@ Another subset of the general workflow in which you do not fetch datastreams is 
 
 If you want to export a set of datastreams from our repository, the `islandora_datastream_crud_fetch_datastreams` command provides a simple way to do so.
 
+### Reverting datastream versions
+
+This module provides basic support for reverting the content and some attributes (mimetype and label) of a datastream to those of an earlier version. The process has two parts, 1) fetching the version of the datastream you want to revert to and 2) pushing the datastream content and attributes back. There are two special options you must use:
+
+* `drush islandora_datastream_crud_fetch_datastreams --user=admin --pid_file=/tmp/imagepids.txt --dsid=MODS --datastreams_directory=/tmp/imagemods --version=1`
+* `drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagemods_modified --datastreams_crud_log=/tmp/crud.log --datastreams_revert`
+
+`--datastreams_version`: The version number of the datastream. 0 is the current version (the default, so you wouldn't normally specify it), 1 is the previous version, 2 is the version before that, etc. `--datastreams_revert` takes no value, but its presence signals `islandora_datastream_crud_push_datastreams` to read a special data file that contains the fetched datastream version's mimetype and label. These values are reinstated along with the previous version's content to become the latest version of the datastream.
+
+The 'reversion' is not complete - it restores the content of the previous version of the datastream but doesn't restore all of the attributes of the previous version, just its mimetype, label and control group, under the assumption that these three attributes are the most likely to change between versions.
 
 ## The PID file
 
@@ -100,7 +110,7 @@ As mentioned above, datastream files do not need to be created using `islandora_
 
 Islandora reacts to the replacement of a datastream or the addition of a new datastream in several ways:
 
-* Datastreams are versioned in Islandora. Pushing datastreams results in the pushed file content becoming the latest version of the specified datastream. It is possible to revert to a previous version of a datastream using the 'revert' option within an object's datastream management tab, but this module does *not* provide a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams`. To be clear: If you push 10,000 MODS datastreams to your repository using this module and you discover that each one contains a small problem, you'll need to revert 10,000 datastreams manually. Or, push a new set of MODS XML datastream files that do not have the same problem.
+* Datastreams are versioned in Islandora. Pushing datastreams results in the pushed file content becoming the latest version of the specified datastream. It is possible to revert to a previous version of a datastream using the 'revert' option within an object's datastream management tab, but this module does *not* provide a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams`. To be clear: If you push 10,000 MODS datastreams to your repository using this module and you discover that each one contains a small problem, you'll need to revert those 10,000 datastreams, either manually or using the method described above. Or, push a new set of MODS XML datastream files that do not have the same problem.
 * Replacing MODS and other datastreams indexed in Solr triggers a reindexing of that object.
 * Replacing the OBJ datastream, or any other datastream from which other datastreams are derived, triggers derivative regeneration as defined by solution packs and other modules. If you do not want derivatives generated as a result of pushing datastreams to your repository, enable "Defer derivative generation during ingest" option in your site's Islandora > Configuration menu. If you enable this option, don't forget to disable after your have pushed your datastreams.
 * `islandora_datastream_crud_push_datastreams` does not change the MIME type of the datastream unless the `--datastreams_mimetype` is present.
@@ -119,7 +129,6 @@ Pull requests are welcome, as are use cases and suggestions. Scripts that do the
 ## Wishlist
 
 * A graphical user interface
-* A way to roll back pushes by reverting datastream versions
 * Use the Drupal Batch framework, like the Islandora Batch modules do
 * Add automated tests
 * The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection

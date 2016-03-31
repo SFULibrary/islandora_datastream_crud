@@ -96,6 +96,10 @@ function islandora_datastream_crud_drush_command() {
       'pause' => array(
         'description' => 'Optional. Number of seconds to pause before pushing the next datastream.' ,
       ),
+      'datastreams_revert' => array(
+        'description' => 'Optional. Include if the push is to revert datastream versions.' ,
+        'value' => 'optional',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -259,7 +263,8 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
       drush_log(dt("!dsid datastream for object !pid retrieved", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
     }
     else {
-      drush_log(dt("PID: !p", array('!p' => $pid)), 'error');
+      drush_log(dt("Datastream !dsid not retrieved for object !pid",
+        array('!dsid' => $dsid, '!pid' => $pid)), 'error');
     }
   }
 }
@@ -271,11 +276,23 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
  * is also part of the 'Create' function in CRUD.
  */
 function drush_islandora_datastream_crud_push_datastreams() {
-  if (!drush_confirm(dt("You are about to push datastreams to objects " .
-    "in your repository. This will create new versions of the datastreams, or " .
-    "create new datastreams if none exist. Do you want to want to continue?",
-    array()))) {
-    drush_user_abort(dt('Exiting, no datastreams pushed.'));
+  if (drush_get_option('datastreams_revert')) {
+    if (!drush_confirm(dt("You are about to push datastreams to objects " .
+      "in your repository. This will revert old versions of the datastreams. " .
+      "Do you want to want to continue?",
+      array()))) {
+      drush_user_abort(dt('Exiting, no datastreams pushed.'));
+      exit;
+    }
+  }
+  else {
+    if (!drush_confirm(dt("You are about to push datastreams to objects " .
+      "in your repository. This will create new versions of the datastreams, or " .
+      "create new datastreams if none exist. Do you want to want to continue?",
+      array()))) {
+      drush_user_abort(dt('Exiting, no datastreams pushed.'));
+      exit;
+    }
   }
 
   $source_directory = drush_get_option('datastreams_source_directory');
@@ -300,9 +317,13 @@ function drush_islandora_datastream_crud_push_datastreams() {
       sleep(drush_get_option('pause'));
     }
     if (drush_get_option('pid_file')) {
-      $pid = islandora_datastream_crud_dsfilename_to_pid($filepath);
-      if (in_array($pid, $pids)) {
-        islandora_datastream_crud_push_datastream($filepath);
+      if ($pid = islandora_datastream_crud_dsfilename_to_pid($filepath)) {
+        if (in_array($pid, $pids)) {
+          islandora_datastream_crud_push_datastream($filepath);
+        }
+      }
+      else {
+        continue;
       }
     }
     else {
