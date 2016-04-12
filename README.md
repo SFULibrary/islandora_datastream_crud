@@ -129,13 +129,13 @@ As mentioned above, datastream files do not need to be created using `islandora_
 
 ## Effects of pushing datastreams
 
-Islandora reacts to the replacement of a datastream or the addition of a new datastream in several ways:
+Islandora reacts to the replacement of a datastream, the deletion of a datastream, and the addition of a new datastream in several ways:
 
 * Datastreams are versioned in Islandora. Pushing datastreams results in the pushed file content becoming the latest version of the specified datastream. It is possible to revert to a previous version of a datastream using the 'revert' option within an object's datastream management tab, but this module does *not* provide a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams`. To be clear: If you push 10,000 MODS datastreams to your repository using this module and you discover that each one contains a small problem, you'll need to revert those 10,000 datastreams, either manually or using the method described above. Or, push a new set of MODS XML datastream files that do not have the same problem.
-* Replacing MODS and other datastreams indexed in Solr triggers a reindexing of that object.
+* Replacing MODS and other datastreams indexed in Solr triggers a reindexing of that object. Deleting datastreams that are indexed in Solr updates the index to remove the indexed content of the deleted datastreams.
 * Replacing the OBJ datastream, or any other datastream from which other datastreams are derived, triggers derivative regeneration as defined by solution packs and other modules. If you do not want derivatives generated as a result of pushing datastreams to your repository, enable "Defer derivative generation during ingest" option in your site's Islandora > Configuration menu. If you enable this option, don't forget to disable after your have pushed your datastreams.
 * `islandora_datastream_crud_push_datastreams` does not change the MIME type of the datastream unless the `--datastreams_mimetype` is present.
-* `hook_islandora_datastream_modified()`, `hook_islandora_datastream_ingested()`, and their variations are fired when datastreams are replaced or created. The effects of this will depend on what modules are enabled on your Islandora site.
+* `hook_islandora_datastream_modified()`, `hook_islandora_datastream_ingested()`, `hook_islandora_datastream_purged()`, and their content-model-specific variations are fired when datastreams are replaced, created, and deleted. The effects of this depend on what modules are enabled on your Islandora site.
 
 In general, the behaviors described here are the same regardless of whether the datastream is replaced using the "Replace" link provided in each object's Manage > Datastreams tab (or using the "+ Add a datastream" link), or with this module. However, Islandora Datastream CRUD lets you replace the same datastream across a lot of objects at once, which amplifies the load on your Islandora stack compared to replacing a datastream on a single object.
 
