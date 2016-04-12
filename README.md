@@ -1,6 +1,6 @@
 # Islandora Datastream CRUD  [![Build Status](https://travis-ci.org/mjordan/islandora_datastream_crud.png?branch=7.x)](https://travis-ci.org/mjordan/islandora_datastream_crud)
 
-Islandora Drush module for performing Create, Read, Update, and Delete operations on datastreams.
+Islandora Drush module for performing Create, Read, Update, and Delete operations on datastreams. If you are looking for a web-based tool to modify XML and text datastreams, check out [Islandora Find & Replace](http://www.contentmath.com/articles/2016/4/11/islandora-find-replace-admin-form-to-batch-update-datastreams).
 
 ## Requirements
 
