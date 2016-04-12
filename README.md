@@ -60,6 +60,17 @@ This is a real step. Skip it at your own peril, doom, and ruin.
 
 A subset of the workflow outlined above adds new (i.e., previously nonexistent) datastreams to a set of objects. In this case, you wouldn't fetch datastream files from Islandora, you would prepare the new datastream files using some external process, and name them using the required filenames. You would then issue an `islandora_datastream_crud_push_datastreams` command to add them to the objects identified in the filenames. You would most likely also want to provide a label for your new datastreams with the `--datastreams_label` option.
 
+You can add multiple datastreams to one object using a single command. Given a directory containing datastream files named using the same PID (in this example, "test:1300"), like this:
+
+```
+test_1300_DS1.txt
+test_1300_DS2.txt
+test_1300_DS3.txt
+``
+the following command would add three datastreams (DS1, DS2, and DS3, all with a MIME type of "text/plain" and a label of "My label") to the object:
+
+`drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/pushtest  --datastreams_mimetype=text/plain  --datastreams_label="My label"`. Notice that the `--pid_file` option is absent.
+
 ### Deleting datastreams
 
 Another subset of the general workflow in which you do not fetch datastreams is to delete a datastream from a set of objects. To do this, you only need to specify the objects you want to delete the datastream from in the PID file, and the datastream ID you want to delete.
