@@ -55,18 +55,37 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
   }
   else {
     $object = islandora_object_load($pid);
+    $normalized_pid = preg_replace('/:/', '_', $pid);
     if ($object[$dsid]) {
+      $ds = $object[$dsid];
+      // If no datastream version number is specified, Tuque gives us
+      // version 0.
+      if (drush_get_option('datastreams_version')) {
+        $version_number = drush_get_option('datastreams_version');
+        // We need to make sure that the version number does not
+        // exceed the number of versions.
+        if ($ds->count() > $version_number) {
+          $ds = $ds[$version_number];
+        }
+        else {
+          return FALSE;
+        }
+      }
       if (drush_get_option('datastreams_extension')) {
         $extension = drush_get_option('datastreams_extension');
       }
       else {
         module_load_include('inc', 'islandora', 'includes/mimetype.utils');
-        $extension = islandora_get_extension_for_mimetype($object[$dsid]->mimetype);
+        $extension = islandora_get_extension_for_mimetype($ds->mimetype);
       }
-      $ds = $object[$dsid];
-      $normalized_pid = preg_replace('/:/', '_', $pid);
-      $path = $dir . DIRECTORY_SEPARATOR . $normalized_pid . '_' .
-        $dsid . '.' . $extension;
+      $ds_filename = $normalized_pid . '_' . $dsid . '.' . $extension;
+      // If a version was specified, we need to record some information about
+      // the version that was retrieved in case we want to revert to that
+      // version later.
+      if (drush_get_option('datastreams_version')) {
+        islandora_datastream_crud_write_version_data_log($dir, $ds_filename, $ds);
+      }
+      $path = $dir . DIRECTORY_SEPARATOR . $ds_filename;
       $ds->getContent($path);
       return TRUE;
     }
@@ -84,9 +103,21 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
  *   The PID of the object the datastream was added to, FALSE otherwise.
  */
 function islandora_datastream_crud_push_datastream($ds_path) {
-  $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
+  if (drush_get_option('datastreams_revert')) {
+    $version_data_path = drush_get_option('datastreams_source_directory') .
+      DIRECTORY_SEPARATOR . 'version_data.log';
+    if (!file_exists($version_data_path)) {
+      drush_set_error('VERSION_DATA_NOT_FOUND', dt('The version data file ' .
+        '(!version_data_path) cannot be found.',
+        array('!version_data_path' => $version_data_path)));
+      exit;
+    }
+  }
+  $ds_filename = pathinfo($ds_path, PATHINFO_BASENAME);
   list($namespace, $number, $dsid) = explode('_', $ds_filename);
-  $pid = islandora_datastream_crud_dsfilename_to_pid($ds_filename);
+  if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_filename)) {
+    return FALSE;
+  }
   module_load_include('inc', 'islandora', 'includes/utilities');
 
   if (!islandora_is_valid_pid($pid)) {
@@ -105,6 +136,9 @@ function islandora_datastream_crud_push_datastream($ds_path) {
   }
   else {
     $object = islandora_object_load($pid);
+    if (drush_get_option('datastreams_revert')) {
+      $version_data = islandora_datastream_crud_read_version_data_log($version_data_path);
+    }
     $ds = isset($object[$dsid]) ? $object[$dsid] : $object->constructDatastream($dsid);
     $ds->setContentFromFile($ds_path);
     if (drush_get_option('datastreams_mimetype')) {
@@ -112,6 +146,11 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     }
     if (drush_get_option('datastreams_label')) {
       $ds->label = drush_get_option('datastreams_label');
+    }
+    // If we're reverting, use the previous version's mimetypeand label.
+    if (drush_get_option('datastreams_revert')) {
+      $ds->mimeType = $version_data[$ds_filename]['mimetype'];
+      $ds->label = $version_data[$ds_filename]['label'];
     }
     try {
       $object->ingestDatastream($ds);
@@ -220,6 +259,12 @@ function islandora_datastream_crud_read_pid_file($pid_file_path) {
  */
 function islandora_datastream_crud_dsfilename_to_pid($filepath) {
   $filename = pathinfo($filepath, PATHINFO_FILENAME);
+  $filenames_to_skip = array(
+    'version_data',
+  );
+  if (in_array($filename, $filenames_to_skip)) {
+    return FALSE;
+  }
   list($namespace, $restofthepid, $dsid) = explode('_', $filename);
   return $namespace . ':' . $restofthepid;
 }
@@ -239,5 +284,51 @@ function islandora_datastream_crud_write_crudlog($pid, $dsid, $message) {
     $crud_log_path = drush_get_option('datastreams_crud_log');
     $entry = $pid . ',' . $dsid . ',' . $message;
     file_put_contents($crud_log_path, $entry . PHP_EOL, FILE_APPEND);
+  }
+}
+
+/**
+ * Writes attributes of a datastream version to a log.
+ *
+ * @param string $dir
+ *   The directory where the datastream content is being saved.
+ * @param string $ds_filename
+ *   The filename given to the datastream content.
+ * @param object $ds
+ *   The datastream object.
+ */
+function islandora_datastream_crud_write_version_data_log($dir, $ds_filename, $ds) {
+  $version_log_path = $dir . DIRECTORY_SEPARATOR . 'version_data.log';
+  $entry = $ds_filename . ',' . $ds->createdDate . ',' . $ds->mimetype .
+    ',' . $ds->label;
+  file_put_contents($version_log_path, $entry . PHP_EOL, FILE_APPEND);
+}
+
+/**
+ * Reads attributes of a datastream version from the data file (log).
+ *
+ * @param string $path
+ *   The path to the version data file.
+ *
+ * @return array
+ *   Array containing version info.
+ */
+function islandora_datastream_crud_read_version_data_log($path) {
+  if (file_exists($path)) {
+    $version_data_rows = file($path);
+    static $version_data = array();
+    if (count($version_data) == 0) {
+      foreach ($version_data_rows as $ds_version_data) {
+        list($filename, $created_date, $mimetype, $label) = explode(',', $ds_version_data, 4);
+        // For now we're only interested in the new version's
+        // mimetype and label.
+        $version_data[$filename]['mimetype'] = $mimetype;
+        $version_data[$filename]['label'] = $label;
+      }
+    }
+    return $version_data;
+  }
+  else {
+    return FALSE;
   }
 }
