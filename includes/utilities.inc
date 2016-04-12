@@ -138,12 +138,8 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     $object = islandora_object_load($pid);
     if (drush_get_option('datastreams_revert')) {
       $version_data = islandora_datastream_crud_read_version_data_log($version_data_path);
-      $ds = isset($object[$dsid]) ? $object[$dsid] :
-        $object->constructDatastream($dsid, $version_data[$ds_filename]['control_group']);
     }
-    else {
-      $ds = isset($object[$dsid]) ? $object[$dsid] : $object->constructDatastream($dsid);
-    }
+    $ds = isset($object[$dsid]) ? $object[$dsid] : $object->constructDatastream($dsid);
     $ds->setContentFromFile($ds_path);
     if (drush_get_option('datastreams_mimetype')) {
       $ds->mimetype = drush_get_option('datastreams_mimetype');
@@ -151,8 +147,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     if (drush_get_option('datastreams_label')) {
       $ds->label = drush_get_option('datastreams_label');
     }
-    // If we're reverting, use the previous version's mimetype, control group,
-    // and label.
+    // If we're reverting, use the previous version's mimetypeand label.
     if (drush_get_option('datastreams_revert')) {
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
@@ -305,7 +300,7 @@ function islandora_datastream_crud_write_crudlog($pid, $dsid, $message) {
 function islandora_datastream_crud_write_version_data_log($dir, $ds_filename, $ds) {
   $version_log_path = $dir . DIRECTORY_SEPARATOR . 'version_data.log';
   $entry = $ds_filename . ',' . $ds->createdDate . ',' . $ds->mimetype .
-    ',' . $ds->controlGroup . ',' . $ds->label;
+    ',' . $ds->label;
   file_put_contents($version_log_path, $entry . PHP_EOL, FILE_APPEND);
 }
 
@@ -324,11 +319,10 @@ function islandora_datastream_crud_read_version_data_log($path) {
     static $version_data = array();
     if (count($version_data) == 0) {
       foreach ($version_data_rows as $ds_version_data) {
-        list($filename, $created_date, $mimetype, $control_group, $label) = explode(',', $ds_version_data, 5);
+        list($filename, $created_date, $mimetype, $label) = explode(',', $ds_version_data, 4);
         // For now we're only interested in the new version's
-        // mimetype, control group, and label.
+        // mimetype and label.
         $version_data[$filename]['mimetype'] = $mimetype;
-        $version_data[$filename]['control_group'] = $control_group;
         $version_data[$filename]['label'] = $label;
       }
     }
