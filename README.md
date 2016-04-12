@@ -66,7 +66,7 @@ You can add multiple datastreams to one object using a single command. Given a d
 test_1300_DS1.txt
 test_1300_DS2.txt
 test_1300_DS3.txt
-``
+```
 the following command would add three datastreams (DS1, DS2, and DS3, all with a MIME type of "text/plain" and a label of "My label") to the object:
 
 `drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/pushtest  --datastreams_mimetype=text/plain  --datastreams_label="My label"`. Notice that the `--pid_file` option is absent.
