@@ -113,7 +113,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       exit;
     }
   }
-  $ds_filename = pathinfo($ds_path, PATHINFO_BASENAME);
+  $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
   list($namespace, $number, $dsid) = explode('_', $ds_filename);
   if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_filename)) {
     return FALSE;
