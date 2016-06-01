@@ -27,6 +27,12 @@ function islandora_datastream_crud_drush_command() {
       'collection' => array(
         'description' => 'The PID of the collection from which to select the objects.' ,
       ),
+      'with_dsid' => array(
+        'description' => 'Limit to objects that have a datastream with the specified datastream ID.' ,
+      ),
+      'without_dsid' => array(
+        'description' => 'Limit to objects that do not have a datastream with the specified datastream ID.' ,
+      ),
       'solr_query' => array(
         'description' => 'A raw Solr query. If the --solr_query option is present, it overrides --content_model, --namespace, and --collection.' ,
       ),
@@ -180,13 +186,35 @@ function drush_islandora_datastream_crud_fetch_pids() {
   }
 
   if (drush_get_option('namespace')) {
-    // --collection or --content_model is present.
+    // Other options are present.
     if (strlen($query)) {
       $query .= ' AND PID:' . drush_get_option('namespace') . '\:*';
     }
     else {
       // Only option is --namespace.
       $query = 'PID:' . drush_get_option('namespace') . '\:*';
+    }
+  }
+
+  if (drush_get_option('with_dsid')) {
+    // Other options are present.
+    if (strlen($query)) {
+      $query .= ' AND fedora_datastreams_mt:' . drush_get_option('with_dsid');
+    }
+    else {
+      // Only option is --with_dsid.
+      $query = 'fedora_datastreams_mt:' . drush_get_option('with_dsid');
+    }
+  }
+
+  if (drush_get_option('without_dsid')) {
+    // Other options are present.
+    if (strlen($query)) {
+      $query .= ' AND -fedora_datastreams_mt:' . drush_get_option('without_dsid');
+    }
+    else {
+      // Only option is --without_dsid.
+      $query = '-fedora_datastreams_mt:' . drush_get_option('without_dsid');
     }
   }
 

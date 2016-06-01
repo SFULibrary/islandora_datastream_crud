@@ -23,9 +23,11 @@ The `islandora_datastream_crud_fetch_pids` command provides several options for 
 * `--namespace`: Lets you specify a namespace.
 * `--collection`: Lets you specify a collection PID.
 * `--content_model`: Lets you specify a content model PID.
+* `--with_dsid`: Lets you specify the ID of a datastream that objects must have.
+* `--without_dsid`: Lets you specify the ID of a datastream that objects must not have.
 * `--solr_query`: A raw Solr query. For example, `--solr_query=*:*` will retrieve all the PIDs in your repository. `--solr_query=dc.title:foo` will retrieve all the PIDs of objects that have the string 'foo' in their DC title fields.
 
-The `--collection`, `--content_model`, `--namespace`, and `--solr_query` options, if present, are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific namespace within a collection. If the `--solr_query` option is used, it overrides `--content_model'`, `--namespace`, and `--collection`.
+The `--collection`, `--content_model`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--solr_query` options, if present, are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific namespace within a collection. If the `--solr_query` option is used, it overrides `--content_model'`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--collection`.
 
 You typically save the fetched PIDs to a PID file, whose path is specified using the `--pid_file` option. See 'The PID file' section below for more information.
 
@@ -78,6 +80,10 @@ Another subset of the general workflow in which you do not fetch datastreams is 
 ### Exporting datastreams
 
 If you want to export a set of datastreams from our repository, the `islandora_datastream_crud_fetch_datastreams` command provides a simple way to do so.
+
+### Triggering derivative generation
+
+You can trigger derivative generation/regeneration on objects if you push OBJ datastreams up. A plausible scenario where you may want to do this is if a batch intest fails during the derivative generation phase. But fetching a list of PIDs using the `--without_dsid` option with the ID of a derivative datastream, you can then fetch the OBJ datastreams and push them back up. Not the most efficient way to trigger datastream generation on a number of objects, but at least you can limit the task to a specific set of objects.
 
 ### Reverting datastream versions
 
