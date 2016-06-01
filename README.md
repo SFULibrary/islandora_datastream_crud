@@ -83,7 +83,7 @@ If you want to export a set of datastreams from our repository, the `islandora_d
 
 ### Triggering derivative generation
 
-You can trigger derivative generation/regeneration on objects if you push OBJ datastreams up. A plausible scenario where you may want to do this is if a batch intest fails during the derivative generation phase. But fetching a list of PIDs using the `--without_dsid` option with the ID of a derivative datastream, you can then fetch the OBJ datastreams and push them back up. Not the most efficient way to trigger datastream generation on a number of objects, but at least you can limit the task to a specific set of objects.
+You can trigger derivative generation/regeneration on objects if you push OBJ datastreams up. A plausible scenario where you may want to do this is if a batch ingest fails during the derivative generation phase. By fetching a list of PIDs using the `--without_dsid` option with the ID of a derivative datastream, you can then fetch those objects' OBJ datastreams and push them back up. Not the most efficient way to trigger datastream generation, but at least you can limit the task to a specific set of objects.
 
 ### Reverting datastream versions
 
