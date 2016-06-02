@@ -31,7 +31,7 @@ The `--collection`, `--content_model`, `--namespace`, `--with_dsid`, `--without_
 
 You typically save the fetched PIDs to a PID file, whose path is specified using the `--pid_file` option. See 'The PID file' section below for more information.
 
-## Workflows
+## General workflow
 
 The general workflow when using this module is:
 
@@ -40,6 +40,8 @@ The general workflow when using this module is:
 3. Update or modify the fetched datastream files.
 4. Ensure that the modified datastream files are what you want to push to your repository. This module provides a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams, but that should not prevent you from performing quality control before you push`.
 5. Push the updated datasteam files back to the objects they belong to.
+
+Steps 1, 2, and 5 involve running the appropriate drush command. Steps 3 and 4 deserve special explantion.
 
 ### Step 3
 
@@ -57,6 +59,8 @@ This is a real step. Skip it at your own peril, doom, and ruin.
 * It is extremely important that you are sure the datastream files you have modified or prepared are ready to push to your repository.
 * You should perform the same types of QA and checking on these files that you perform prior to doing a batch ingest (validate the MODS, etc.).
 * It would be prudent to push a small number of test datastream files to your repository before pusing the entire set, and to push the datastream files in small subsets and perform QA on the modified datastreams in your repository before pushing more.
+
+## Specific workflows
 
 ### Creating new datastreams
 
@@ -158,7 +162,7 @@ Pull requests are welcome, as are use cases and suggestions. Scripts that do the
 * A graphical user interface
 * Use the Drupal Batch framework, like the Islandora Batch modules do
 * Add automated tests
-* The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection
+* The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection. If this is a problem for you, and all of the objects in your collection use the same namespace, use the `--namespace` option to get your PIDs instead of the `--collection` option.
 * Does not work with datastreams in the (R)edirect and (E)xternal Referenced control groups - use cases are welcome.
 
 ## License
