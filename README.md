@@ -90,7 +90,7 @@ If you want to export a set of datastreams from our repository, the `islandora_d
 
 This module offers a command, `islandora_datastream_crud_generate_derivatives`, that will generate all the derivatives from the specified source datastream ID. For example, to generate or regenerate all the derivatives based on the OBJ datastream, you would issue the following command:
 
-* `drush islandora_datastream_crud_generate_derivatives --user=admin --source_dsid=OBJ --pid_file=/tmp/regenerate_derivatives_for_these_objects.txt`
+`drush islandora_datastream_crud_generate_derivatives --user=admin --source_dsid=OBJ --pid_file=/tmp/regenerate_derivatives_for_these_objects.txt`
 
 Note that this command does not download datastream files from your repository; it generates the derivatives directly from the datastream identified by the `--source_dsid` option.
 
