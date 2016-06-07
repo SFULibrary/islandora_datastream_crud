@@ -76,7 +76,7 @@ function islandora_datastream_crud_drush_command() {
   );
   $items['islandora_datastream_crud_push_datastreams'] = array(
     'aliases' => array('idcrudpd'),
-    'description' => 'Add or replace datastrems. This operation writes datastreams to objects in your repository,',
+    'description' => 'Add or replace datastrems. This operation writes datastreams to objects in your repository.',
     'examples' => array(
       'drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagecollection_objs',
       'drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagecollection_objs --pid_fille=/tmp/wanted_pids.txt',
@@ -112,8 +112,7 @@ function islandora_datastream_crud_drush_command() {
 
   $items['islandora_datastream_crud_delete_datastreams'] = array(
     'aliases' => array('idcruddd'),
-    'description' => 'Add or replace datastrems. This operation writes datastreams to objects in your repository,',
-    'description' => 'Delete datastreams. This operation objects in your repository,',
+    'description' => 'Delete datastreams.',
     'examples' => array(
       'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --pid_file=/tmp/delete_foo_from_these_objects.txt',
     ),
@@ -124,6 +123,31 @@ function islandora_datastream_crud_drush_command() {
       ),
       'dsid' => array(
         'description' => 'Datastream ID.' ,
+        'required' => TRUE,
+      ),
+      'datastreams_crud_log' => array(
+        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.' ,
+      ),
+      'pause' => array(
+        'description' => 'Optional. Number of seconds to pause before deleting the next datastream.' ,
+      ),
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
+  );
+
+  $items['islandora_datastream_crud_generate_derivatives'] = array(
+    'aliases' => array('idcrudgd'),
+    'description' => 'Generate or regenerate derivative datastreams from a source DSID.',
+    'examples' => array(
+      'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --pid_file=/tmp/delete_foo_from_these_objects.txt',
+    ),
+    'options' => array(
+      'pid_file' => array(
+        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.' ,
+        'required' => TRUE,
+      ),
+      'source_dsid' => array(
+        'description' => 'The source datastream ID.' ,
         'required' => TRUE,
       ),
       'datastreams_crud_log' => array(
@@ -387,5 +411,55 @@ function drush_islandora_datastream_crud_delete_datastreams() {
       sleep(drush_get_option('pause'));
     }
     islandora_datastream_crud_delete_datastream($pid, $dsid);
+  }
+}
+
+/**
+ * Regenerates derivative datastreams.
+ */
+function drush_islandora_datastream_crud_generate_derivatives() {
+  $dsid = drush_get_option('source_dsid');
+  if (!drush_confirm(dt("You are about to regenerate derivatives from the " .
+    "!dsid datastream for a set of objects in your repository. This action " .
+    "cannot be undone. Do you want to want to continue?",
+    array('!dsid' => $dsid)))) {
+    drush_user_abort(dt('Exiting, no derivatives generated.'));
+  }
+
+  module_load_include('inc', 'islandora', 'includes/derivatives');
+  module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
+  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
+  if (!count($pids)) {
+    drush_set_error('NO_PIDS_IN_PID_FILE',
+    dt('The specified PID file (!pid_file) contains no PIDS.',
+      array('!pid_file' => $pid_file)));
+  }
+  foreach ($pids as $pid) {
+    if (drush_get_option('pause')) {
+      sleep(drush_get_option('pause'));
+    }
+    // Load the object.
+    if (!$object = islandora_object_load($pid)) {
+      drush_set_error('IBD_OBJECT_NOT_FOUND',
+        dt('The specified object (!pid) does not exist or is not accessible.',
+          array('!pid' => $pid)));
+      continue;
+    }
+    // Regenerate derivatives.
+    $options = array('force' => TRUE, 'source_dsid' => $dsid);
+    $messages = islandora_do_derivatives($object, $options);
+    // Print the output from the derivative generation functions.
+    foreach ($messages as $message) {
+      if ($message['success']) {
+        foreach ($message['messages'] as $ds_message) {
+          drush_log(dt($ds_message['message'], $ds_message['message_sub']), 'ok');
+        }
+      }
+      else {
+        foreach ($message['messages'] as $ds_message) {
+          drush_set_error('DERIVATIVE_NOT_GENERATED', dt($ds_message['message'], $ds_message['message_sub']));
+        }
+      }
+    }
   }
 }
