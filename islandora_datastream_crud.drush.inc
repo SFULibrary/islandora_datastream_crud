@@ -418,17 +418,17 @@ function drush_islandora_datastream_crud_delete_datastreams() {
  * Regenerates derivative datastreams.
  */
 function drush_islandora_datastream_crud_generate_derivatives() {
+  module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
+  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
   $dsid = drush_get_option('source_dsid');
   if (!drush_confirm(dt("You are about to regenerate derivatives from the " .
-    "!dsid datastream for a set of objects in your repository. This action " .
+    "!dsid datastream for !num object(s) in your repository. This action " .
     "cannot be undone. Do you want to want to continue?",
-    array('!dsid' => $dsid)))) {
+    array('!num' => count($pids), '!dsid' => $dsid)))) {
     drush_user_abort(dt('Exiting, no derivatives generated.'));
   }
 
   module_load_include('inc', 'islandora', 'includes/derivatives');
-  module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
-  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
   if (!count($pids)) {
     drush_set_error('NO_PIDS_IN_PID_FILE',
     dt('The specified PID file (!pid_file) contains no PIDS.',
@@ -446,18 +446,20 @@ function drush_islandora_datastream_crud_generate_derivatives() {
       continue;
     }
     // Regenerate derivatives.
+    drush_log(dt('Please be patient, generating derivatives from the !dsid datastream for !pid',
+      array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
     $options = array('force' => TRUE, 'source_dsid' => $dsid);
     $messages = islandora_do_derivatives($object, $options);
     // Print the output from the derivative generation functions.
     foreach ($messages as $message) {
       if ($message['success']) {
         foreach ($message['messages'] as $ds_message) {
-          drush_log(dt($ds_message['message'], $ds_message['message_sub']), 'ok');
+          drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
         }
       }
       else {
         foreach ($message['messages'] as $ds_message) {
-          drush_set_error('DERIVATIVE_NOT_GENERATED', dt($ds_message['message'], $ds_message['message_sub']));
+          drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], $ds_message['message_sub'])));
         }
       }
     }
