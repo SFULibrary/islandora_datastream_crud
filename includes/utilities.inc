@@ -48,7 +48,7 @@ function islandora_datastream_crud_query_solr($query) {
  */
 function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
   if (!islandora_object_load($pid)) {
-    drush_set_error('IBD_COLLECTION_NOT_FOUND',
+    drush_set_error('OBJECT_DOES_NOT_EXIST',
       dt('The specified object (!pid) does not exist or is not accessible.',
       array('!pid' => $pid)));
     return FALSE;
@@ -88,6 +88,11 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
       $path = $dir . DIRECTORY_SEPARATOR . $ds_filename;
       $ds->getContent($path);
       return TRUE;
+    }
+    else {
+      drush_log(dt("Object !pid does not have a !dsid datastream",
+        array('!dsid' => $dsid, '!pid' => $pid)), 'status');
+      return FALSE;
     }
   }
 }
@@ -147,7 +152,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     if (drush_get_option('datastreams_label')) {
       $ds->label = drush_get_option('datastreams_label');
     }
-    // If we're reverting, use the previous version's mimetypeand label.
+    // If we're reverting, use the previous version's mimetype and label.
     if (drush_get_option('datastreams_revert')) {
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
@@ -190,7 +195,7 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid) {
   drupal_static_reset('islandora_get_tuque_connection');
 
   if (!islandora_object_load($pid)) {
-    drush_set_error('IBD_COLLECTION_NOT_FOUND',
+    drush_set_error('COLLECTION_NOT_FOUND',
       dt('The specified object (!pid) does not exist or is not accessible.',
       array('!pid' => $pid)));
     return FALSE;

@@ -316,7 +316,7 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
     }
     else {
       drush_log(dt("Datastream !dsid not retrieved for object !pid",
-        array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+        array('!dsid' => $dsid, '!pid' => $pid)), 'warning');
     }
   }
 }
