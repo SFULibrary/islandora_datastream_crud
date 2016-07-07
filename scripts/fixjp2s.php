@@ -44,7 +44,7 @@ print "Fixing JP2 files, please be patient..." . PHP_EOL;
 $directory_iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
 foreach ($directory_iterator as $filepath => $info) {
     $filename = pathinfo($filepath, PATHINFO_FILENAME);
-    if (preg_match('/\.jp2/', $filepath)) {
+    if (preg_match('/\.jp2$/', $filepath)) {
         fix_jp2($filepath);
     }
 }
