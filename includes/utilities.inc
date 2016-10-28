@@ -157,6 +157,11 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
     }
+    // If update object label and DC
+    if ((drush_get_option('update_objectlabel')) AND ($dsid==="DC")) {
+      islandora_datastream_crud_write_crudlog($pid, $dsid, 'update object label');
+    }
+    
     try {
       $object->ingestDatastream($ds);
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
