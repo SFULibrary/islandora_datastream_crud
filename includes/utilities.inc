@@ -157,11 +157,18 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
     }
+    //
     // If update object label and DC
     if ((drush_get_option('update_objectlabel')) AND ($dsid==="DC")) {
-      islandora_datastream_crud_write_crudlog($pid, $dsid, 'update object label');
+        $dublincore = file_get_contents($ds_path);
+        $dc_xml = new SimpleXmlElement($dublincore);
+        $namespaces = $dc_xml->getNameSpaces(true);
+        $dc = $dc_xml->children($namespaces['dc']);
+        $new_title = $dc->title;
+        $object->label = $new_title;
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'object label updated to '.$new_title);
     }
-    
+    //  
     try {
       $object->ingestDatastream($ds);
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
