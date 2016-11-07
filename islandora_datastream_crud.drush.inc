@@ -106,7 +106,7 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. Include if the push is to revert datastream versions.' ,
         'value' => 'optional',
       ),
-      'update_objectlabel' => array(
+      'update_object_label' => array(
         'description' => 'Optional. Include if the push of DC datastream has to update object label derived from DC title element.' ,
         'value' => 'optional',
       ),
