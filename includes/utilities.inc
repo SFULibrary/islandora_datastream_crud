@@ -20,6 +20,7 @@ function islandora_datastream_crud_query_solr($query) {
   $pids = array();
   $query_processor = new IslandoraSolrQueryProcessor();
   $query_processor->solrQuery = $query;
+  $query_processor->solrParams['fl'] = 'PID';
   // Some silly number.
   $query_processor->solrLimit = '1000000';
   $query_processor->executeQuery(FALSE);
