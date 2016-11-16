@@ -6,6 +6,8 @@ Islandora Drush module for performing Create, Read, Update, and Delete operation
 
 * [Islandora](https://github.com/Islandora/islandora)
 * [Islandora Solr Search](https://github.com/Islandora/islandora_solr_search)
+* [Islandora Batch] (https://github.com/Islandora/islandora_batch)
+* [Islandora XML Solution Pack] (https://github.com/mjordan/islandora_solution_pack_xml)
 
 ## Usage
 
