@@ -177,6 +177,41 @@ function islandora_datastream_crud_push_datastream($ds_path) {
         islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
       }
     }
+    // MODS, then from it DC, datastreams.
+    if($dsid == 'MODS'){
+      module_load_include('inc', 'islandora_solution_pack_xml', 'includes/utilities');
+      $path_to_mods_to_dc_xsl = drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl';
+      $mods_to_dc_xsl = file_get_contents($path_to_mods_to_dc_xsl);
+      
+      $dc_content = islandora_solution_pack_xml_apply_xslt($mods_to_dc_xsl, $ds->content);
+      
+      $dc_exists = isset($object['DC']);
+      $dc_ds = null;
+      
+      if(!$dc_exists){
+        $dc_ds = $object->constructDatastream('DC');
+        $dc_ds->mimetype = 'application/xml';
+        $dc_ds->label = 'DC Record';
+        $dc_ds->setContentFromString($dc_content);
+        $object->ingestDatastream($dc_ds);
+      } else {
+        $dc_ds = $object['DC'];
+        $dc_ds->setContentFromString($dc_content);
+      }
+      
+      //fix title if needed
+      $dublincore = $dc_content;
+      $dc_xml = new SimpleXmlElement($dublincore);
+      $namespaces = $dc_xml->getNameSpaces(TRUE);
+      $dc = $dc_xml->children($namespaces['dc']);
+      $new_title = $dc->title;
+      if ($new_title != $object->label) {
+        $old_title = $object->label;
+        $object->label = $new_title;
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
+      }
+        
+    }
     try {
       $object->ingestDatastream($ds);
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
