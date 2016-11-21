@@ -148,9 +148,9 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     $ds = isset($object[$dsid]) ? $object[$dsid] : $object->constructDatastream($dsid);
     $ds->setContentFromFile($ds_path);
     if (drush_get_option('datastreams_mimetype')) {
-      // only update mime type if it is different othewise datastream will
+      // Only update mime type if it is different othewise datastream will
       // have two versions.
-      // TODO - find a way to only create a single datastream updating both
+      // @todo - find a way to only create a single datastream updating both
       // content and mime type without triggering the creation of 2 versions. 
       if ($ds->mimetype != drush_get_option('datastreams_mimetype')) {
         $ds->mimetype = drush_get_option('datastreams_mimetype');
