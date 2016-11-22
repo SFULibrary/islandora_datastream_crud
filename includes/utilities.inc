@@ -158,8 +158,15 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
     }
+
+    $update_object_label = TRUE;
+    $update_object_label_option = strtolower(drush_get_option('update_object_label', 'y'));
+    if ($update_object_label_option != 'y') {
+      $update_object_label = FALSE;
+    }
+    
     // Update object label from DC if specified.
-    if ((drush_get_option('update_object_label')) AND ($dsid == 'DC')) {
+    if ($update_object_label && ($dsid == 'DC')) {
       $dublincore = file_get_contents($ds_path);
       $dc_xml = new SimpleXmlElement($dublincore);
       $namespaces = $dc_xml->getNameSpaces(TRUE);
@@ -207,7 +214,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $namespaces = $dc_xml->getNameSpaces(TRUE);
       $dc = $dc_xml->children($namespaces['dc']);
       $new_title = $dc->title;
-      if (drush_get_option('update_object_label') && $new_title != $object->label) {
+      if ($update_object_label && $new_title != $object->label) {
         $old_title = $object->label;
         $object->label = $new_title;
         islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
