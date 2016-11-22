@@ -177,8 +177,15 @@ function islandora_datastream_crud_push_datastream($ds_path) {
         islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
       }
     }
+    
+    $convert_mods_to_dc = TRUE;
+    $convert_mods_option = strtolower(drush_get_option('convert_mods_to_dc', 'y'));
+    if ($convert_mods_option != 'y') {
+        $convert_mods_to_dc = FALSE;
+    }
+    
     // MODS, then from it DC, datastreams.
-    if($dsid == 'MODS'){
+    if ($dsid == 'MODS' && $convert_mods_to_dc) {
       module_load_include('inc', 'islandora_solution_pack_xml', 'includes/utilities');
       $path_to_mods_to_dc_xsl = drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl';
       $mods_to_dc_xsl = file_get_contents($path_to_mods_to_dc_xsl);
@@ -186,15 +193,17 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $dc_content = islandora_solution_pack_xml_apply_xslt($mods_to_dc_xsl, $ds->content);
       
       $dc_exists = isset($object['DC']);
-      $dc_ds = null;
+
+      $dc_ds = NULL;
       
-      if(!$dc_exists){
+      if (!$dc_exists) {
         $dc_ds = $object->constructDatastream('DC');
         $dc_ds->mimetype = 'application/xml';
         $dc_ds->label = 'DC Record';
         $dc_ds->setContentFromString($dc_content);
         $object->ingestDatastream($dc_ds);
-      } else {
+      } 
+      else {
         $dc_ds = $object['DC'];
         $dc_ds->setContentFromString($dc_content);
       }
@@ -205,7 +214,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $namespaces = $dc_xml->getNameSpaces(TRUE);
       $dc = $dc_xml->children($namespaces['dc']);
       $new_title = $dc->title;
-      if ($new_title != $object->label) {
+      if (drush_get_option('update_object_label') && $new_title != $object->label) {
         $old_title = $object->label;
         $object->label = $new_title;
         islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
