@@ -20,6 +20,7 @@ function islandora_datastream_crud_query_solr($query) {
   $pids = array();
   $query_processor = new IslandoraSolrQueryProcessor();
   $query_processor->solrQuery = $query;
+  $query_processor->solrParams['fl'] = 'PID';
   // Some silly number.
   $query_processor->solrLimit = '1000000';
   $query_processor->executeQuery(FALSE);
@@ -157,18 +158,19 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
     }
-    //
-    // If update object label and DC
-    if ((drush_get_option('update_objectlabel')) AND ($dsid==="DC")) {
-        $dublincore = file_get_contents($ds_path);
-        $dc_xml = new SimpleXmlElement($dublincore);
-        $namespaces = $dc_xml->getNameSpaces(true);
-        $dc = $dc_xml->children($namespaces['dc']);
-        $new_title = $dc->title;
+    // Update object label from DC if specified.
+    if ((drush_get_option('update_object_label')) AND ($dsid == 'DC')) {
+      $dublincore = file_get_contents($ds_path);
+      $dc_xml = new SimpleXmlElement($dublincore);
+      $namespaces = $dc_xml->getNameSpaces(TRUE);
+      $dc = $dc_xml->children($namespaces['dc']);
+      $new_title = $dc->title;
+      if ($new_title != $object->label) {
+        $old_title = $object->label;
         $object->label = $new_title;
-        islandora_datastream_crud_write_crudlog($pid, $dsid, 'object label updated to '.$new_title);
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
+      }
     }
-    //  
     try {
       $object->ingestDatastream($ds);
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
