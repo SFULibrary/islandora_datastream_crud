@@ -46,13 +46,13 @@ Steps 1, 2, and 5 involve running the appropriate drush command. Steps 3 and 4 d
 
 ### Step 3
 
-This module doesn't do anything in Step 3 (update or modify the fetched datastream files). That's up to you. For example, if you fetched all of the TIFF OBJ datastreams from a collection, you could correct the color in the TIFFs using Photoshop, and then push them to your repository. Two sample scripts that modify datastream files are included in the `scripts` directory:
+This module doesn't do anything in Step 3 (update or modify the fetched datastream files). That's up to you. For example, if you fetched all of the TIFF OBJ datastreams from a collection, you could correct the color in the TIFFs using Photoshop, and then push them to your repository. Three sample scripts that modify datastream files are included in the `scripts` directory:
 
 * a PHP script that appends an element/fragment to a set of XML files
 * a shell script that adds a label/watermark to a set of image files
 * a PHP script that converts JPEG2000 files from those extracted from CONTENTdm to ones usable in Islandora 
 
-You may not find a use for these two scripts, but they illustrate the kinds of things you may want to do to datastream files.
+You may not find a use for these three scripts, but they illustrate the kinds of things you may want to do to datastream files.
 
 ### Step 4
 
