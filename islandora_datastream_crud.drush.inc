@@ -398,6 +398,10 @@ function drush_islandora_datastream_crud_push_datastreams() {
  */
 function drush_islandora_datastream_crud_delete_datastreams() {
   $dsid = drush_get_option('dsid');
+  if ($dsid == 'DC') {
+    drush_user_abort(dt('DC is a required datastream and cannot be deleted.'));
+    exit;
+  }
   if (!drush_confirm(dt("You are about to delete (purge) the !dsid " .
     "datastream from a set of objects in your repository. This action " .
     "cannot be undone. Do you want to want to continue?",
