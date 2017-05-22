@@ -304,6 +304,7 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
       "continue?",
       array('!dir' => $datastreams_directory)))) {
       drush_user_abort(dt('Exiting, no datastreams fetched.'));
+      exit;
     }
   }
   else {
@@ -314,6 +315,7 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
     }
     else {
       drush_user_abort(dt('Exiting, no datastreams fetched.'));
+      exit;
     }
   }
 
@@ -408,11 +410,16 @@ function drush_islandora_datastream_crud_push_datastreams() {
  */
 function drush_islandora_datastream_crud_delete_datastreams() {
   $dsid = drush_get_option('dsid');
+  if ($dsid == 'DC') {
+    drush_user_abort(dt('DC is a required datastream and cannot be deleted.'));
+    exit;
+  }
   if (!drush_get_option('silent') && !drush_confirm(dt("You are about to delete (purge) the !dsid " .
     "datastream from a set of objects in your repository. This action " .
     "cannot be undone. Do you want to want to continue?",
     array('!dsid' => drush_get_option('dsid'))))) {
     drush_user_abort(dt('Exiting, no datastreams deleted.'));
+    exit;
   }
 
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
@@ -442,6 +449,7 @@ function drush_islandora_datastream_crud_generate_derivatives() {
     "cannot be undone. Do you want to want to continue?",
     array('!num' => count($pids), '!dsid' => $dsid)))) {
     drush_user_abort(dt('Exiting, no derivatives generated.'));
+    exit;
   }
 
   module_load_include('inc', 'islandora', 'includes/derivatives');
