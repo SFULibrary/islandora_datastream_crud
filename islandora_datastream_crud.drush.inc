@@ -71,6 +71,9 @@ function islandora_datastream_crud_drush_command() {
       'pause' => array(
         'description' => 'Optional. Number of seconds to pause before fetching the next datastream.' ,
       ),
+      'silent' => array(
+        'description' => 'This will not prompt user, but will use "Y" for all prompts.  Use with caution.',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -110,6 +113,9 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. Include if the push of DC datastream has to update object label derived from DC title element.' ,
         'value' => 'optional',
       ),
+      'silent' => array(
+        'description' => 'This will not prompt user, but will use "Y" for all prompts.  Use with caution.',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -135,6 +141,9 @@ function islandora_datastream_crud_drush_command() {
       'pause' => array(
         'description' => 'Optional. Number of seconds to pause before deleting the next datastream.' ,
       ),
+      'silent' => array(
+        'description' => 'This will not prompt user, but will use "Y" for all prompts.  Use with caution.',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -159,6 +168,9 @@ function islandora_datastream_crud_drush_command() {
       ),
       'pause' => array(
         'description' => 'Optional. Number of seconds to pause before deleting the next datastream.' ,
+      ),
+      'silent' => array(
+        'description' => 'This will not prompt user, but will use "Y" for all prompts.  Use with caution.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -286,7 +298,7 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
   $pid_file = (drush_get_option('pid_file'));
 
   if (file_exists($datastreams_directory)) {
-    if (!drush_confirm(dt("Datastreams directory !dir already exists. Any " .
+    if (!drush_get_option('silent') && !drush_confirm(dt("Datastreams directory !dir already exists. Any " .
       "datastream files from the same object PID/datastream ID combination " .
       "that already exist in it will be overwritten. Do you want to want to " .
       "continue?",
@@ -296,7 +308,7 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
     }
   }
   else {
-    if (drush_confirm(dt("Datastreams directory !dir does not exist. Do you " .
+    if (drush_get_option('silent') || drush_confirm(dt("Datastreams directory !dir does not exist. Do you " .
       "want to create it and continue?",
       array('!dir' => $datastreams_directory)))) {
       mkdir($datastreams_directory);
@@ -335,7 +347,7 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
  */
 function drush_islandora_datastream_crud_push_datastreams() {
   if (drush_get_option('datastreams_revert')) {
-    if (!drush_confirm(dt("You are about to push datastreams to objects " .
+    if (!drush_get_option('silent') && !drush_confirm(dt("You are about to push datastreams to objects " .
       "in your repository. This will revert old versions of the datastreams. " .
       "Do you want to want to continue?",
       array()))) {
@@ -344,7 +356,7 @@ function drush_islandora_datastream_crud_push_datastreams() {
     }
   }
   else {
-    if (!drush_confirm(dt("You are about to push datastreams to objects " .
+    if (!drush_get_option('silent') && !drush_confirm(dt("You are about to push datastreams to objects " .
       "in your repository. This will create new versions of the datastreams, or " .
       "create new datastreams if none exist. Do you want to want to continue?",
       array()))) {
@@ -402,7 +414,7 @@ function drush_islandora_datastream_crud_delete_datastreams() {
     drush_user_abort(dt('DC is a required datastream and cannot be deleted.'));
     exit;
   }
-  if (!drush_confirm(dt("You are about to delete (purge) the !dsid " .
+  if (!drush_get_option('silent') && !drush_confirm(dt("You are about to delete (purge) the !dsid " .
     "datastream from a set of objects in your repository. This action " .
     "cannot be undone. Do you want to want to continue?",
     array('!dsid' => drush_get_option('dsid'))))) {
@@ -432,7 +444,7 @@ function drush_islandora_datastream_crud_generate_derivatives() {
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
   $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
   $dsid = drush_get_option('source_dsid');
-  if (!drush_confirm(dt("You are about to regenerate derivatives from the " .
+  if (!drush_get_option('silent') && !drush_confirm(dt("You are about to regenerate derivatives from the " .
     "!dsid datastream for !num object(s) in your repository. This action " .
     "cannot be undone. Do you want to want to continue?",
     array('!num' => count($pids), '!dsid' => $dsid)))) {
