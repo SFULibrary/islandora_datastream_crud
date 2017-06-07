@@ -17,6 +17,8 @@ Commands are inspired by a simple Git workflow (fetch, push, delete).
 * `drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --pid_file=/tmp/delete_foo_from_these_objects.txt`
 * `drush islandora_datastream_crud_generate_derivatives --user=admin --source_dsid=OBJ --pid_file=/tmp/regenerate_derivatives_for_these_objects.txt`
 
+Note that you can include Drush's `-y` option to bypass confirmation prompts. This is useful if you are running Datastream CRUD in a `nohup` or scripted environment.
+
 ## Fetching PIDs
 
 The `islandora_datastream_crud_fetch_pids` command provides several options for specifying which objects you want datastreams from:
