@@ -83,6 +83,8 @@ the following command would add three datastreams (DS1, DS2, and DS3, all with a
 
 Another subset of the general workflow in which you do not fetch datastreams is to delete a datastream from a set of objects. To do this, you only need to specify the objects you want to delete the datastream from in the PID file, and the datastream ID you want to delete.
 
+Note that you cannot delete the DC datastream. Fedora Commons requires that each object has a DC datastream.
+
 ### Exporting datastreams
 
 If you want to export a set of datastreams from our repository, the `islandora_datastream_crud_fetch_datastreams` command provides a simple way to do so.
