@@ -53,6 +53,7 @@ This module doesn't do anything in Step 3 (update or modify the fetched datastre
 * a PHP script that appends an element/fragment to a set of XML files
 * a shell script that adds a label/watermark to a set of image files
 * a PHP script that converts JPEG2000 files from those extracted from CONTENTdm to ones usable in Islandora 
+* a PHP script that performs search and replace on a directory of files
 
 You may not find a use for these three scripts, but they illustrate the kinds of things you may want to do to datastream files.
 
