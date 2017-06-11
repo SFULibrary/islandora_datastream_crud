@@ -120,8 +120,9 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     }
   }
   $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
+  // Need to get the datastream ID at least at this point.
   list($namespace, $number, $dsid) = explode('_', $ds_filename);
-  if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_filename)) {
+  if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_path)) {
     return FALSE;
   }
   module_load_include('inc', 'islandora', 'includes/utilities');
