@@ -248,25 +248,29 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid) {
  *   An associative array of the properties to update.
  */
 function islandora_datastream_crud_update_object_properties($object, $props) {
-  if ($props['state'] != $object->state) {
-    $object->state = $props['state'];
-    drush_log(dt("State for object !pid updated to !state", array('!pid' => $object->id, '!state' => $props['state'])), 'ok');
-    islandora_datastream_crud_write_crudlog($pid, $props['state'], 'Object state updated');
+  if (isset($props['state'])) {
+    if ($props['state'] != $object->state) {
+      $object->state = $props['state'];
+      drush_log(dt("State for object !pid updated to !state", array('!pid' => $object->id, '!state' => $props['state'])), 'ok');
+      islandora_datastream_crud_write_crudlog($pid, $props['state'], 'Object state updated');
+    }
+    else {
+      drush_log(dt("State for object !pid not updated since !state is both the new and old state",
+        array('!pid' => $object->id, '!state' => $props['state'])), 'warning');
+      islandora_datastream_crud_write_crudlog($pid, $props['state'], 'Object state not updated since old and new are the same');
+    }
   }
-  else {
-    drush_log(dt("State for object !pid not updated since !state is both the new and old state",
-      array('!pid' => $object->id, '!state' => $props['state'])), 'ok');
-    islandora_datastream_crud_write_crudlog($pid, $props['state'], 'Object state not updated since old and new are the same');
-  }
-  if ($props['owner'] != $object->owner) {
-    $object->owner = $props['owner'];
-    drush_log(dt("Owner for object !pid updated to !owner", array('!pid' => $object->id, '!owner' => $props['owner'])), 'ok');
-    islandora_datastream_crud_write_crudlog($pid, $props['owner'], 'Object owner updated');
-  }
-  else {
-    drush_log(dt("Owner for object !pid not updated since !owner is both the new and old owner",
-      array('!pid' => $object->id, '!owner' => $props['owner'])), 'ok');
-    islandora_datastream_crud_write_crudlog($pid, $props['owner'], 'Object owner not updated since old and new are the same');
+  if (isset($props['owner'])) {
+    if ($props['owner'] != $object->owner) {
+      $object->owner = $props['owner'];
+      drush_log(dt("Owner for object !pid updated to !owner", array('!pid' => $object->id, '!owner' => $props['owner'])), 'ok');
+      islandora_datastream_crud_write_crudlog($pid, $props['owner'], 'Object owner updated');
+    }
+    else {
+      drush_log(dt("Owner for object !pid not updated since !owner is both the new and old owner",
+        array('!pid' => $object->id, '!owner' => $props['owner'])), 'warning');
+      islandora_datastream_crud_write_crudlog($pid, $props['owner'], 'Object owner not updated since old and new are the same');
+    }
   }
 
   if (drush_get_option('update_object_label')) {
@@ -277,9 +281,16 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
       $namespace_prefix = 'mods';
       $namespace_uri = "http://www.loc.gov/mods/v3";
       if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $mods_xml)) {
-        $object->label = $label;
-        drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
-        islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
+        if ($object->label != $label) {
+          $object->label = $label;
+          drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
+          islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
+        }
+        else {
+          drush_log(dt('Label for object !pid not updated since "!label" is the same',
+            array('!pid' => $object->id, '!label' => $label)), 'warning');
+          islandora_datastream_crud_write_crudlog($pid, $label, 'Label not updated since old and new are the same');
+        }
       }
       else {
         drush_set_error('CANNOT_GET_LABEL_FROM_MODS', 'Cannot get label from MODS, object label not updated.');
@@ -290,9 +301,16 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
       $namespace_prefix = 'dc';
       $namespace_uri = "http://purl.org/dc/elements/1.1/";
       if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $dc_xml)) {
-        $object->label = $label;
-        drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
-        islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
+        if ($object->label != $label) {
+          $object->label = $label;
+          drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
+          islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
+        }
+        else {
+          drush_log(dt('Label for object !pid not updated since "!label" is the same',
+            array('!pid' => $object->id, '!label' => $label)), 'warning');
+          islandora_datastream_crud_write_crudlog($pid, $label, 'Label not updated since old and new are the same');
+        }
       }
       else {
         drush_set_error('CANNOT_GET_LABEL_FROM_MODS', 'Cannot get label from DC, object label not updated.');
@@ -335,6 +353,7 @@ function islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_pre
     foreach ($elements as $element) {
       $label .= ' / ' . $element->nodeValue;
     }
+    $label = ltrim($label, " /");
   }
 
   if (strlen($label)) {
