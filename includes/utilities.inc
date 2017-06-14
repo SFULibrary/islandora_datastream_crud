@@ -120,7 +120,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     }
   }
   $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
-  // Need to get the datastream ID at least at this point.
+  // Get the datastream ID from the end of the filename.
   list($namespace, $number, $dsid) = explode('_', $ds_filename);
   if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_path)) {
     return FALSE;
@@ -236,6 +236,112 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid) {
       islandora_datastream_crud_write_crudlog($pid, $dsid, 'not deleted');
       return FALSE;
     }
+  }
+}
+
+/**
+ * Updates one or more object properties.
+ *
+ * @param object $object
+ *   The object to update.
+ * @param array $props
+ *   An associative array of the properties to update.
+ */
+function islandora_datastream_crud_update_object_properties($object, $props) {
+  if ($props['state'] != $object->state) {
+    $object->state = $props['state'];
+    drush_log(dt("State for object !pid updated to !state", array('!pid' => $object->id, '!state' => $props['state'])), 'ok');
+    islandora_datastream_crud_write_crudlog($pid, $props['state'], 'Object state updated');
+  }
+  else {
+    drush_log(dt("State for object !pid not updated since !state is both the new and old state",
+      array('!pid' => $object->id, '!state' => $props['state'])), 'ok');
+    islandora_datastream_crud_write_crudlog($pid, $props['state'], 'Object state not updated since old and new are the same');
+  }
+  if ($props['owner'] != $object->owner) {
+    $object->owner = $props['owner'];
+    drush_log(dt("Owner for object !pid updated to !owner", array('!pid' => $object->id, '!owner' => $props['owner'])), 'ok');
+    islandora_datastream_crud_write_crudlog($pid, $props['owner'], 'Object owner updated');
+  }
+  else {
+    drush_log(dt("Owner for object !pid not updated since !owner is both the new and old owner",
+      array('!pid' => $object->id, '!owner' => $props['owner'])), 'ok');
+    islandora_datastream_crud_write_crudlog($pid, $props['owner'], 'Object owner not updated since old and new are the same');
+  }
+
+  if (drush_get_option('update_object_label')) {
+    $dsid = drush_get_option('source_dsid', 'MODS');
+    $xpath_exp = drush_get_option('source_xpath', '//mods:titleInfo/mods:title');
+    if ($dsid == 'MODS') {
+      $mods_xml = $object['MODS']->content;
+      $namespace_prefix = 'mods';
+      $namespace_uri = "http://www.loc.gov/mods/v3";
+      if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $mods_xml)) {
+        $object->label = $label;
+        drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
+        islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
+      }
+      else {
+        drush_set_error('CANNOT_GET_LABEL_FROM_MODS', 'Cannot get label from MODS, object label not updated.');
+      }
+    }
+    elseif ($dsid == 'DC') {
+      $dc_xml = $object['DC']->content;
+      $namespace_prefix = 'dc';
+      $namespace_uri = "http://purl.org/dc/elements/1.1/";
+      if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $dc_xml)) {
+        $object->label = $label;
+        drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
+        islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
+      }
+      else {
+        drush_set_error('CANNOT_GET_LABEL_FROM_MODS', 'Cannot get label from DC, object label not updated.');
+      }
+    }
+    else {
+      drush_set_error('INVALID DATASTREAM ID',
+        dt('Valid datastream IDs are "MODS" and "DC", you provided "!disd".',
+        array('!dsid' => $dsid)));
+      exit;
+    }
+  }
+}
+
+/**
+ * Extracts string value from a datastream using an XPath expression.
+ *
+ * @param string $xpath_exp
+ *   The XPath expression.
+ * @param string $namespace_prefix
+ *   The namespace prefix to register with the XPath processor,
+ *   e.g., 'mods' or 'dc'.
+ * @param string $namespace_uri
+ *   The namespace URI corresponding to the registered namespace prefix.
+ * @param string $xml
+ *   A serialized XML document, e.g., coming from a MODS or DC
+ *   datastream content.
+ *
+ * @return string|FALSE
+ *   The string value of result from the XPath, or FALSE.
+ */
+function islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $xml) {
+  $dom = new DOMDocument();
+  $dom->loadXML($xml);
+  $xpath = new DOMXPath($dom);
+  $xpath->registerNamespace($namespace_prefix, $namespace_uri);
+  $elements = $xpath->query($xpath_exp);
+  if ($elements->length) {
+    $label = '';
+    foreach ($elements as $element) {
+      $label .= ' / ' . $element->nodeValue;
+    }
+  }
+
+  if (strlen($label)) {
+    return trim($label);
+  }
+  else {
+    return FALSE;
   }
 }
 

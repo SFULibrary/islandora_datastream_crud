@@ -164,6 +164,40 @@ function islandora_datastream_crud_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
 
+  $items['islandora_datastream_crud_update_object_properties'] = array(
+    'aliases' => array('idcrudop'),
+    'description' => 'Update object properties.',
+    'examples' => array(
+      'drush islandora_datastream_crud_update_object_properties --user=admin --pid_file=/tmp/update_these_objects.txt',
+    ),
+    'options' => array(
+      'pid_file' => array(
+        'description' => 'Absolute path to the file that lists PIDs for objects whose properties you want to update.' ,
+        'required' => TRUE,
+      ),
+      'owner' => array(
+        'description' => "The object's owner." ,
+      ),
+      'state' => array(
+        'description' => "The object's state (A/I/D)." ,
+      ),
+      'update_object_label' => array(
+        'description' => "Include if you want to update the object's label from either a MODS or DC element." ,
+        'value' => 'optional' ,
+      ),
+      'source_dsid' => array(
+        'description' => "Tells the 'update_object_label' option which datastream to use as the source of the label. Allowed values are 'MODS' and 'DC'." ,
+      ),
+      'source_xpath' => array(
+        'description' => "Xpath expression that tells the 'update_object_label' option where to find the label value. Must be wrapped in double quotation marks." ,
+      ),
+      'datastreams_crud_log' => array(
+        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, old value of the property, and new value of the property will be written to the specified file.' ,
+      ),
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
+  );
+
   return $items;
 }
 
@@ -475,5 +509,58 @@ function drush_islandora_datastream_crud_generate_derivatives() {
         }
       }
     }
+  }
+}
+
+/**
+ * Updates object properties.
+ */
+function drush_islandora_datastream_crud_update_object_properties() {
+  module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
+  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
+
+  $confirmation_message = '';
+  $props = array();
+  if (drush_get_option('owner')) {
+    $props['owner'] = drush_get_option('owner');
+    $confirmation_message = 'owner, ';
+  }
+  if (drush_get_option('state')) {
+    $props['state'] = drush_get_option('state');
+    $confirmation_message .= 'state, ';
+  }
+
+  if (drush_get_option('update_object_label')) {
+    $confirmation_message .= 'label';
+  }
+  $confirmation_message = rtrim($confirmation_message, " ,");
+
+  if (!drush_confirm(dt("You are about to change the following properties" .
+    " of !num objects in your repository: !properties. This action" .
+    " cannot be undone. Do you want to want to continue?",
+    array('!num' => count($pids), '!properties' => $confirmation_message)))) {
+    drush_user_abort(dt('Exiting, no objects updated.'));
+    exit;
+  }
+
+  if (!count($pids)) {
+    drush_set_error('NO_PIDS_IN_PID_FILE',
+    dt('The specified PID file (!pid_file) contains no PIDS.',
+      array('!pid_file' => $pid_file)));
+  }
+  foreach ($pids as $pid) {
+    if (drush_get_option('pause')) {
+      sleep(drush_get_option('pause'));
+    }
+    // Load the object.
+    if (!$object = islandora_object_load($pid)) {
+      drush_set_error('IBD_OBJECT_NOT_FOUND',
+        dt('The specified object (!pid) does not exist or is not accessible.',
+          array('!pid' => $pid)));
+      continue;
+    }
+
+    // Update the object's properties.
+    islandora_datastream_crud_update_object_properties($object, $props);
   }
 }
