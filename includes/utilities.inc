@@ -149,7 +149,13 @@ function islandora_datastream_crud_push_datastream($ds_path) {
     $ds = isset($object[$dsid]) ? $object[$dsid] : $object->constructDatastream($dsid);
     $ds->setContentFromFile($ds_path);
     if (drush_get_option('datastreams_mimetype')) {
-      $ds->mimetype = drush_get_option('datastreams_mimetype');
+      // Only update mime type if it is different othewise datastream will
+      // have two versions.
+      // @todo - find a way to only create a single datastream updating both
+      // content and mime type without triggering the creation of 2 versions. 
+      if ($ds->mimetype != drush_get_option('datastreams_mimetype')) {
+        $ds->mimetype = drush_get_option('datastreams_mimetype');
+      }
     }
     if (drush_get_option('datastreams_label')) {
       $ds->label = drush_get_option('datastreams_label');
@@ -159,8 +165,15 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
     }
+
+    $update_object_label = TRUE;
+    $update_object_label_option = strtolower(drush_get_option('update_object_label', 'y'));
+    if ($update_object_label_option != 'y') {
+      $update_object_label = FALSE;
+    }
+    
     // Update object label from DC if specified.
-    if ((drush_get_option('update_object_label')) AND ($dsid == 'DC')) {
+    if ($update_object_label && ($dsid == 'DC')) {
       $dublincore = file_get_contents($ds_path);
       $dc_xml = new SimpleXmlElement($dublincore);
       $namespaces = $dc_xml->getNameSpaces(TRUE);
@@ -171,6 +184,50 @@ function islandora_datastream_crud_push_datastream($ds_path) {
         $object->label = $new_title;
         islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
       }
+    }
+    
+    $convert_mods_to_dc = TRUE;
+    $convert_mods_option = strtolower(drush_get_option('convert_mods_to_dc', 'y'));
+    if ($convert_mods_option != 'y') {
+        $convert_mods_to_dc = FALSE;
+    }
+    
+    // MODS, then from it DC, datastreams.
+    if ($dsid == 'MODS' && $convert_mods_to_dc) {
+      module_load_include('inc', 'islandora_solution_pack_xml', 'includes/utilities');
+      $path_to_mods_to_dc_xsl = drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl';
+      $mods_to_dc_xsl = file_get_contents($path_to_mods_to_dc_xsl);
+      
+      $dc_content = islandora_solution_pack_xml_apply_xslt($mods_to_dc_xsl, $ds->content);
+      
+      $dc_exists = isset($object['DC']);
+
+      $dc_ds = NULL;
+      
+      if (!$dc_exists) {
+        $dc_ds = $object->constructDatastream('DC');
+        $dc_ds->mimetype = 'application/xml';
+        $dc_ds->label = 'DC Record';
+        $dc_ds->setContentFromString($dc_content);
+        $object->ingestDatastream($dc_ds);
+      } 
+      else {
+        $dc_ds = $object['DC'];
+        $dc_ds->setContentFromString($dc_content);
+      }
+      
+      //fix title if needed
+      $dublincore = $dc_content;
+      $dc_xml = new SimpleXmlElement($dublincore);
+      $namespaces = $dc_xml->getNameSpaces(TRUE);
+      $dc = $dc_xml->children($namespaces['dc']);
+      $new_title = $dc->title;
+      if ($update_object_label && $new_title != $object->label) {
+        $old_title = $object->label;
+        $object->label = $new_title;
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
+      }
+        
     }
     try {
       $object->ingestDatastream($ds);

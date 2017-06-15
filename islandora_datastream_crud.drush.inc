@@ -110,6 +110,9 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. Include if the push of DC datastream has to update object label derived from DC title element.' ,
         'value' => 'optional',
       ),
+      'convert_mods_to_dc' => array(
+        'description' => '(y/n) Optional. Convert mods files to dublin core DEFAULT is: y. If absent, any MODS file will be converted to DC and added as the DC stream',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
