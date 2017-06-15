@@ -170,7 +170,7 @@ In general, the behaviors described here are the same regardless of whether the 
 
 ## Development and feedback
 
-Pull requests are welcome, as are use cases and suggestions. Scripts that do the work of updating datastreams, especially for MODS datastreams, are also welcome.
+Pull requests are welcome, as are use cases and suggestions. Scripts that do the work of updating datastreams, especially for MODS datastreams, are also welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed information.
 
 ## Wishlist
 

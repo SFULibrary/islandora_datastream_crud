@@ -2,15 +2,11 @@
 
 All contributions to Islandora Datastream CRUD are welcome: use-cases, documentation, code, bug reports, feature requests, etc. You do not need to be a programmer to contribute!
 
-Regardless of how you want to contribute to this module, start by opening a Github issue. Someone (probably the maintainer) will respond and keep the discussion going.
-
-### Write some documentation
-
-If you use Islandora Datastream CRUD and you have documented a task for yourself, consider sharing it with other users. We'd be happy to the Islandora Datastream CRUD README or link to it if you'd rather maintain it somewhere else.
+Regardless of how you want to contribute to this module, start by opening a GitHub issue. Someone (probably the maintainer) will respond and keep the discussion going.
 
 ### Request a new feature
 
-We love hear about how you want to use this module! In order to help us understand a new feature request, we ask you to provide us with a structured use case following this template:
+We love hear about how you want to use this module! To request a feature you should open an issue. Set the Issue Type to "feature request". In order to help us understand a new feature request, we ask you to provide us with a structured use case following this template:
 
 | Title (Goal)  | The title or goal of your use case                            |
 --------------- |------------------------------------                           |
@@ -28,6 +24,10 @@ We love hear about how you want to use this module! In order to help us understa
 **Additional Remarks**:
 
 * One per list bullet
+
+### Write some documentation
+
+If you use Islandora Datastream CRUD and you have documented a task for yourself, consider sharing it with other users. We'd be happy to the Islandora Datastream CRUD README or link to it if you'd rather maintain it somewhere else.
 
 ### Report a bug
 
@@ -61,21 +61,22 @@ Contributions to the Islandora Datastream CRUD codebase should be sent as GitHub
 
 #### Issue / Topic Branches
 
-All issues should be worked on in separate git branches. The branch name should be the same as the Github issue number, e.g., issue-243.
+All issues should be worked on in separate git branches. The branch name should be the same as the GitHub issue number, e.g., issue-243.
 
 ### Create a pull request
 
 Take a look at [Creating a pull request](https://help.github.com/articles/creating-a-pull-request). In a nutshell you need to:
 
 1. [Fork](https://help.github.com/articles/fork-a-repo) the Islandora Datastream CRUD repository to your personal GitHub account. See [Fork a repo](https://help.github.com/articles/fork-a-repo) for detailed instructions.
-2. Commit any changes to the issue/topic branch in your fork. Comments can be as terse as "Work on #243.", etc. but you can be more descriptive if you want. However, please refer to the issue you are working on somewhere in the commit comment using Github's '#' shortcut, as in the example.
+2. Commit any changes to the issue/topic branch in your fork. Comments can be as terse as "Work on #243.", etc. but you can be more descriptive if you want. However, please refer to the issue you are working on somewhere in the commit comment using GitHub's '#' shortcut, as in the example.
 3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the Islandora Datastream CRUD GitHub repository that you forked in step 1 (in other words, https://github.com/mjordan/islandora_datastream_crud).
+4. Complete the pull request template.
 
 You may want to read [Syncing a fork](https://help.github.com/articles/syncing-a-fork) for instructions on how to keep your fork up to date with the latest changes of the upstream (official) Islandora Datastream CRUD repository.
 
 ### Workflow for testing and merging pull requests
 
-Smoke tests are required for the work you are contributing. In other words, a human needs to test your work to confirm it does what it is intended to do and that it doesn't introduce any side effects. If your work needs to be tested using a smoke test, you are expected to provide sample Islandora Datastream CRUD commands and, if applicable, input data to allow the reviewer to perform the smoke tests.
+Smoke tests are required for the work you are contributing. In other words, a human needs to test your work to confirm it does what it is intended to do and that it doesn't introduce any side effects. You are expected to provide sample Islandora Datastream CRUD commands and, if applicable, input data to allow the reviewer to perform the smoke tests.
 
 ## License Agreements
 
