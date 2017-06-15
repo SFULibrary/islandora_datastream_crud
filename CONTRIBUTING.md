@@ -56,6 +56,8 @@ Contributions to the Islandora Datastream CRUD codebase should be sent as GitHub
     2. Comment on the issue with your plan for implementing the enhancement. Explain what pieces of the codebase you are going to touch and how everything is going to fit together.
     3. The Islandora Datastream CRUD maintainers will work with you on the design to make sure you are on the right track.
     4. Implement your issue, create a pull request (see below), and iterate from there.
+    5. Please run `drush dcs --extensions=inc` and `drush coder-review --reviews=production,security,style,i18n,potx,sniffer islandora_datastream_crud` before committing to your branch.
+
 
 #### Issue / Topic Branches
 
@@ -67,19 +69,17 @@ Take a look at [Creating a pull request](https://help.github.com/articles/creati
 
 1. [Fork](https://help.github.com/articles/fork-a-repo) the Islandora Datastream CRUD repository to your personal GitHub account. See [Fork a repo](https://help.github.com/articles/fork-a-repo) for detailed instructions.
 2. Commit any changes to the issue/topic branch in your fork. Comments can be as terse as "Work on #243.", etc. but you can be more descriptive if you want. However, please refer to the issue you are working on somewhere in the commit comment using Github's '#' shortcut, as in the example.
-3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the MIK GitHub repository that you forked in step 1 (in other words, https://github.com/MarcusBarnes/mik).
+3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the Islandora Datastream CRUD GitHub repository that you forked in step 1 (in other words, https://github.com/mjordan/islandora_datastream_crud).
 
-You may want to read [Syncing a fork](https://help.github.com/articles/syncing-a-fork) for instructions on how to keep your fork up to date with the latest changes of the upstream (official) `mik` repository.
+You may want to read [Syncing a fork](https://help.github.com/articles/syncing-a-fork) for instructions on how to keep your fork up to date with the latest changes of the upstream (official) Islandora Datastream CRUD repository.
 
 ### Workflow for testing and merging pull requests
 
-Part of opening a pull request is to describe how reviewers should test your work. MIK uses two different test workflows, "smoke test" and "testable":
-
-* Smoke tests are required for the work you are contributing. In other words, a human needs to test your work to confirm it does what it is intended to do and that it doesn't introduce any side effects. If your work needs to be tested using a smoke test, you are expected to provide sample Islandora Datastream CRUD commands and, if applicable, input data to allow the reviewer to perform the smoke tests.
+Smoke tests are required for the work you are contributing. In other words, a human needs to test your work to confirm it does what it is intended to do and that it doesn't introduce any side effects. If your work needs to be tested using a smoke test, you are expected to provide sample Islandora Datastream CRUD commands and, if applicable, input data to allow the reviewer to perform the smoke tests.
 
 ## License Agreements
 
-Islandora Datastream CRUD is licensed under GPL version 3 or higher. By opening a pull request or otherwise contributing code to the MIK codebase, you transfer non-exclusive ownership of that code (you retain ownership of your code for other purposes) to the Islandora Datastream CRUD maintainers for the sole purpose of redistributing your contribution within the Islandora Datastream CRUD codebase under the conditions of the GPLv3 license or higher. You also warrant that you have the legal authority to make such a transfer.
+Islandora Datastream CRUD is licensed under GPL version 3 or higher. By opening a pull request or otherwise contributing code to the Islandora Datastream CRUD codebase, you transfer non-exclusive ownership of that code (you retain ownership of your code for other purposes) to the Islandora Datastream CRUD maintainers for the sole purpose of redistributing your contribution within the Islandora Datastream CRUD codebase under the conditions of the GPLv3 license or higher. You also warrant that you have the legal authority to make such a transfer.
 
 ## Thanks
 
