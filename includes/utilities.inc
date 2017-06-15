@@ -276,51 +276,22 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
   if (drush_get_option('update_object_label')) {
     $dsid = drush_get_option('source_dsid', 'MODS');
     $xpath_exp = drush_get_option('source_xpath', '//mods:titleInfo/mods:title');
-    if ($dsid == 'MODS') {
-      $mods_xml = $object['MODS']->content;
-      $namespace_prefix = 'mods';
-      $namespace_uri = "http://www.loc.gov/mods/v3";
-      if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $mods_xml)) {
-        if ($object->label != $label) {
-          $object->label = $label;
-          drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
-          islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
-        }
-        else {
-          drush_log(dt('Label for object !pid not updated since "!label" is the same',
-            array('!pid' => $object->id, '!label' => $label)), 'warning');
-          islandora_datastream_crud_write_crudlog($pid, $label, 'Label not updated since old and new are the same');
-        }
+
+    $ds_xml = $object[$dsid]->content;
+    if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $ds_xml)) {
+      if ($object->label != $label) {
+        $object->label = $label;
+        drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
+        islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
       }
       else {
-        drush_set_error('CANNOT_GET_LABEL_FROM_MODS', 'Cannot get label from MODS, object label not updated.');
-      }
-    }
-    elseif ($dsid == 'DC') {
-      $dc_xml = $object['DC']->content;
-      $namespace_prefix = 'dc';
-      $namespace_uri = "http://purl.org/dc/elements/1.1/";
-      if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $dc_xml)) {
-        if ($object->label != $label) {
-          $object->label = $label;
-          drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
-          islandora_datastream_crud_write_crudlog($pid, $label, 'Label updated');
-        }
-        else {
-          drush_log(dt('Label for object !pid not updated since "!label" is the same',
-            array('!pid' => $object->id, '!label' => $label)), 'warning');
-          islandora_datastream_crud_write_crudlog($pid, $label, 'Label not updated since old and new are the same');
-        }
-      }
-      else {
-        drush_set_error('CANNOT_GET_LABEL_FROM_MODS', 'Cannot get label from DC, object label not updated.');
+        drush_log(dt('Label for object !pid not updated since "!label" is the same',
+          array('!pid' => $object->id, '!label' => $label)), 'warning');
+        islandora_datastream_crud_write_crudlog($pid, $label, 'Label not updated since old and new are the same');
       }
     }
     else {
-      drush_set_error('INVALID DATASTREAM ID',
-        dt('Valid datastream IDs are "MODS" and "DC", you provided "!disd".',
-        array('!dsid' => $dsid)));
-      exit;
+      drush_set_error('CANNOT_GET_LABEL_FROM_DATASTREAM', 'Cannot get label from datastream, object label not updated.');
     }
   }
 }
@@ -330,11 +301,6 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
  *
  * @param string $xpath_exp
  *   The XPath expression.
- * @param string $namespace_prefix
- *   The namespace prefix to register with the XPath processor,
- *   e.g., 'mods' or 'dc'.
- * @param string $namespace_uri
- *   The namespace URI corresponding to the registered namespace prefix.
  * @param string $xml
  *   A serialized XML document, e.g., coming from a MODS or DC
  *   datastream content.
@@ -342,18 +308,27 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
  * @return string|FALSE
  *   The string value of result from the XPath, or FALSE.
  */
-function islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_prefix, $namespace_uri, $xml) {
+function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
+  $concat_string = drush_get_option('concat_string', ' ');
   $dom = new DOMDocument();
   $dom->loadXML($xml);
   $xpath = new DOMXPath($dom);
-  $xpath->registerNamespace($namespace_prefix, $namespace_uri);
+
+  $namespaces = islandora_datastream_crud_get_namespaces($xml);
+  foreach ($namespaces as $namespace_prefix => $namespace_uri) {
+    $xpath->registerNamespace($namespace_prefix, $namespace_uri);
+  }
+
   $elements = $xpath->query($xpath_exp);
   if ($elements->length) {
     $label = '';
     foreach ($elements as $element) {
-      $label .= ' / ' . $element->nodeValue;
+      $label .= $concat_string . $element->nodeValue;
     }
-    $label = ltrim($label, " /");
+    $label = ltrim($label, $concat_string);
+  }
+  else {
+    return FALSE;
   }
 
   if (strlen($label)) {
@@ -362,6 +337,22 @@ function islandora_datastream_crud_get_label_from_xml($xpath_exp, $namespace_pre
   else {
     return FALSE;
   }
+}
+
+/**
+ * Get the namespaces registered in a serialized XML document.
+ *
+ * @param string $xml
+ *   The serialized XML document.
+ *
+ * @return array
+ *   An associative array containing a prefix => URI pair
+ *   for each registered namespace.
+ */ 
+function islandora_datastream_crud_get_namespaces($xml) {
+  $simple_xml = new SimpleXMLElement($xml);
+  $namespaces = $simple_xml->getNamespaces(TRUE);
+  return $namespaces;
 }
 
 /**

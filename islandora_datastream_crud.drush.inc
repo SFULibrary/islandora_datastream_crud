@@ -186,10 +186,13 @@ function islandora_datastream_crud_drush_command() {
         'value' => 'optional' ,
       ),
       'source_dsid' => array(
-        'description' => "Tells the 'update_object_label' option which datastream to use as the source of the label. Allowed values are 'MODS' and 'DC'." ,
+        'description' => "Tells the 'update_object_label' option which datastream to use as the source of the label." ,
       ),
       'source_xpath' => array(
         'description' => "Xpath expression that tells the 'update_object_label' option where to find the label value. Must be wrapped in double quotation marks." ,
+      ),
+      'concat_string' => array(
+        'description' => "String used to join repeated values retrieved by --source_xpath. Default is a single space." ,
       ),
       'datastreams_crud_log' => array(
         'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, old value of the property, and new value of the property will be written to the specified file.' ,
@@ -562,5 +565,15 @@ function drush_islandora_datastream_crud_update_object_properties() {
 
     // Update the object's properties.
     islandora_datastream_crud_update_object_properties($object, $props);
+  }
+}
+
+/**
+ * Validate function for islandora_datastream_crud_update_object_properties().
+ */
+function drush_islandora_datastream_crud_update_object_properties_validate() {
+  if (drush_get_option('state') &&
+    !in_array(drush_get_option('state'), array('A', 'I', 'D'))) {
+    drush_set_error('INVALID_OBJECT_STATE_PROVIDED', NULL, dt("Value of the --state option must be one of 'A', 'I', or 'D'. "));
   }
 }
