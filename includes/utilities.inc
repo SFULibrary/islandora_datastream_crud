@@ -348,7 +348,7 @@ function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
  * @return array
  *   An associative array containing a prefix => URI pair
  *   for each registered namespace.
- */ 
+ */
 function islandora_datastream_crud_get_namespaces($xml) {
   $simple_xml = new SimpleXMLElement($xml);
   $namespaces = $simple_xml->getNamespaces(TRUE);
