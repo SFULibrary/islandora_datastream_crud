@@ -217,16 +217,17 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid) {
   }
   else {
     $object = islandora_object_load($pid);
+    if (!isset($object[$dsid])) {
+      drush_log(dt("!dsid datastream not found in object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+      islandora_datastream_crud_write_crudlog($pid, $dsid, 'not found');
+      return FALSE;
+    }
+
     try {
       if ($object->purgeDatastream($dsid)) {
         drush_log(dt("!dsid datastream purged from object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
         islandora_datastream_crud_write_crudlog($pid, $dsid, 'deleted');
         return TRUE;
-      }
-      else {
-        drush_log(dt("!dsid datastream not purged from object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'error');
-        islandora_datastream_crud_write_crudlog($pid, $dsid, 'not deleted');
-        return FALSE;
       }
     }
     catch (Exception $e) {
