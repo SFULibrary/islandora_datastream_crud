@@ -160,9 +160,24 @@ Islandora reacts to the replacement of a datastream, the deletion of a datastrea
 * Replacing the OBJ datastream, or any other datastream from which other datastreams are derived, triggers derivative regeneration as defined by solution packs and other modules. If you do not want derivatives generated as a result of pushing datastreams to your repository, enable "Defer derivative generation during ingest" option in your site's Islandora > Configuration menu. If you enable this option, don't forget to disable after your have pushed your datastreams.
 * `islandora_datastream_crud_push_datastreams` does not change the MIME type of the datastream unless the `--datastreams_mimetype` is present. Also, and very importantly, it does not assign a default MIME type when adding the datastream. This means that you must include the `--datastreams_mimetype` option if you are pushing datastreams that do not already exist in the target objects.
 * `hook_islandora_datastream_modified()`, `hook_islandora_datastream_ingested()`, `hook_islandora_datastream_purged()`, and their content-model-specific variations are fired when datastreams are replaced, created, and deleted. The effects of this depend on what modules are enabled on your Islandora site.
-* One of `islandora_datastream_crud_push_datastreams`'s options, `--update_object_label`, will modify the parent object's label. This option only applies when you are pushing DC datastreams; it updates the object's label using the value in the DC title element. Since the label is a property of the object, using this option will fire all of the 'hook_islandora_object_modified()' and related implementations. The effects of this depend on what modules are enabled on your Islandora site.
 
-In general, the behaviors described here are the same regardless of whether the datastream is replaced using the "Replace" link provided in each object's Manage > Datastreams tab (or using the "+ Add a datastream" link), or with this module. However, Islandora Datastream CRUD lets you replace the same datastream across a lot of objects at once, which amplifies the load on your Islandora stack compared to replacing a datastream on a single object.
+In general, the behaviors described here are the same regardless of whether the datastream is replaced using the "Replace" link provided in each object's Manage > Datastreams tab (or using the "+ Add a datastream" link), or with this module. However, Islandora Datastream CRUD lets you replace the same datastream across a lot of objects at once, which amplifies the load on your Islandora stack compared to replacing a datastream on a single object. To determine what the potential effect on your site might be, you should update datastreams in small sets before moving on to updating large numbers of datastreams at once.
+
+## Modifying object properties
+
+Even though this module is called Islandora *Datastream* CRUD, it can also modify object properties. It can do this in two ways:
+
+* One of `islandora_datastream_crud_push_datastreams`'s options, `--update_object_label`, will modify the parent object's label. This option only applies when you are pushing DC datastreams; it updates the object's label using the value in the DC title element. This option will likely be deprecated in the future in favor of the `islandora_datastream_crud_update_object_properties` command.
+* Via the `islandora_datastream_crud_update_object_properties` command, which can take the following options:
+  * `--pid_file`: Required. Absolute path to the file that lists PIDs for objects whose properties you want to update.
+  * `--owner`: Optional. The owner you want to assign to objects identified in `--pid_file`.
+  * `--state`: Optional. The state you want to assign to objects identified in `--pid_file`. Must be one of A (for 'active'), I (for 'inactive'), or D for 'deleted').
+  * `--update_object_label`: Optional. This option does not take a value, but it is accompanied by the following two other options:
+    * `--source_dsid`: Optional; default is 'MODS'. Can be any XML datastream ID.
+    * `--source_xpath`: Optional; default is "//mods:titleInfo/title". An XPath expression identifying the value you want to use as the object label. Note that if your XPath expression should be wrapped in double quotes (`"expression"`) so that Drush interacts with the shell properly, e.g., `--source_xpath="//mods:titleInfo[not(@type='alternative')]/mods:title"`.
+  * `--datastreams_crud_log`: Optional. Absolute path to a log file. If present, the PID, old value of the property, and new value of the property will be written to the specified file.
+
+Updating object properties such as owner, state, and label will fire all of the 'hook_islandora_object_modified()' and related implementations enabled on your site. The effects of this are the same as if you updated an object's label or state within its Manage > Properties tab. However, Islandora Datastream CRUD lets you update the properties of a lot of objects at once, which amplifies the load on your Islandora stack compared to updating a property of a single object. TL;DR is it's proobably best to update object properties in small sets and observe any effects the update may have before moving on to updating large numbers of objects at once.
 
 # Maintainer
 
@@ -170,7 +185,9 @@ In general, the behaviors described here are the same regardless of whether the 
 
 ## Development and feedback
 
-Pull requests are welcome, as are use cases and suggestions. Scripts that do the work of updating datastreams, especially for MODS datastreams, are also welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed information.
+Pull requests are welcome, as are use cases and suggestions. Please open an issue before creating a pull request.
+
+Scripts that do the work of updating datastreams, especially for MODS datastreams, are also welcome.
 
 ## Wishlist
 
