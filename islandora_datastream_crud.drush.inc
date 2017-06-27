@@ -110,6 +110,13 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. Include if the push of DC datastream has to update object label derived from DC title element.' ,
         'value' => 'optional',
       ),
+      'update_dc' => array(
+        'description' => 'Optional. Set to false if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is true, but you will be prompted to confirm the DC update.' ,
+        'value' => 'optional',
+      ),
+      'dc_transform' => array(
+        'description' => 'Optional. Path to XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.' ,
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -423,6 +430,20 @@ function drush_islandora_datastream_crud_push_datastreams() {
     }
     else {
       islandora_datastream_crud_push_datastream($filepath);
+
+      // Issue 17 stuff. Placing the code here assumes that the source datastream
+      // was successfully ingested.
+      $ds_extension = pathinfo($ds_path, PATHINFO_EXTENSION);
+      if (drush_get_option('update_dc', TRUE) && strtolower($ds_extension) == 'xml') {
+        if (drush_confirm(dt("You are pushing !dsid datastreams. Do you want to " .
+          "update each object's DC datastream using the new !dsid?",
+          array('!dsid' => $dsid)))) {
+          islandora_datastream_crud_regenerate_dc($dsid);
+        }
+      }
+
+
+
     }
   }
 }

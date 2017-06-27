@@ -172,6 +172,7 @@ function islandora_datastream_crud_push_datastream($ds_path) {
         islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
       }
     }
+
     try {
       $object->ingestDatastream($ds);
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
@@ -338,6 +339,25 @@ function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
   else {
     return FALSE;
   }
+}
+
+/**
+ * Regenerates DC from the specified datastream.
+ *
+ * @param string $source_dsid
+ *   The source datastream.
+ */
+function islandora_datastream_crud_regenerate_dc($source_dsid) {
+  // Get the stylesheet (it is --dc_transform).
+  $xslt_path = drush_get_option('dc_transform', 'islandora_xml_forms/builder/transforms/mods_to_dc.xsl');
+  if (!file_exists(realpath($xslt_path))) {
+    dt('The specified XSLT stylesheet (!xslt_path) does not exist.',
+      array('!xslt_path' => $xslt_path));
+    drupal_exit();
+  }
+  // Do the transform.
+  // Add the new DC.
+  drush_log(dt("Hi from islandora_datastream_crud_regenerate_dc", 'ok'));
 }
 
 /**
