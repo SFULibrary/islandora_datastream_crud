@@ -111,8 +111,7 @@ function islandora_datastream_crud_drush_command() {
         'value' => 'optional',
       ),
       'update_dc' => array(
-        'description' => 'Optional. Set to false if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is true, but you will be prompted to confirm the DC update.' ,
-        'value' => 'optional',
+        'description' => 'Optional. Set to 0 (zero) if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is 1, but you will be prompted to confirm the DC update.' ,
       ),
       'dc_transform' => array(
         'description' => 'Optional. Path to XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.' ,
@@ -414,6 +413,26 @@ function drush_islandora_datastream_crud_push_datastreams() {
         array('!pid_file' => $pid_file)));
     }
   }
+
+  // We only provide the option to generate DC from datastream files that
+  // end in .xml. We need to get one such fileaname so we can determine
+  // which DSID we are generating the DC from.
+  $xml_files = array_slice(array_filter(glob($source_directory .
+    DIRECTORY_SEPARATOR . '*.xml'), 'is_file'), 0, 1);
+  if (count($xml_files) === 1) {
+    // Note: https://github.com/mjordan/islandora_datastream_crud/issues/33
+    // may make separator not be an _.
+    list($namespace, $restofthepid, $dsid) = explode('_', pathinfo($xml_files[0], PATHINFO_FILENAME));
+  }
+  
+  $regenerate_dc = FALSE;
+  if (drush_get_option('update_dc', 1)) {
+    if (drush_confirm(dt("Do you want to update each object's DC datastream using the new !dsid?",
+      array('!dsid' => $dsid)))) {
+      $regenerate_dc = TRUE;
+    }
+  }
+
   foreach (glob("$source_directory/*") as $filepath) {
     if (drush_get_option('pause')) {
       sleep(drush_get_option('pause'));
@@ -421,7 +440,7 @@ function drush_islandora_datastream_crud_push_datastreams() {
     if (drush_get_option('pid_file')) {
       if ($pid = islandora_datastream_crud_dsfilename_to_pid($filepath)) {
         if (in_array($pid, $pids)) {
-          islandora_datastream_crud_push_datastream($filepath);
+          islandora_datastream_crud_push_datastream($filepath, $regenerate_dc);
         }
       }
       else {
@@ -429,21 +448,7 @@ function drush_islandora_datastream_crud_push_datastreams() {
       }
     }
     else {
-      islandora_datastream_crud_push_datastream($filepath);
-
-      // Issue 17 stuff. Placing the code here assumes that the source datastream
-      // was successfully ingested.
-      $ds_extension = pathinfo($ds_path, PATHINFO_EXTENSION);
-      if (drush_get_option('update_dc', TRUE) && strtolower($ds_extension) == 'xml') {
-        if (drush_confirm(dt("You are pushing !dsid datastreams. Do you want to " .
-          "update each object's DC datastream using the new !dsid?",
-          array('!dsid' => $dsid)))) {
-          islandora_datastream_crud_regenerate_dc($dsid);
-        }
-      }
-
-
-
+      islandora_datastream_crud_push_datastream($filepath, $regenerate_dc);
     }
   }
 }

@@ -104,11 +104,13 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
  *
  * @param string $ds_path
  *   The absolute path to the datastream content.
+ * @param bool $regenerate_dc
+ *   Whether or not to regenerate DC from pushed datastreams.
  *
  * @return string|bool
  *   The PID of the object the datastream was added to, FALSE otherwise.
  */
-function islandora_datastream_crud_push_datastream($ds_path) {
+function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FALSE) {
   if (drush_get_option('datastreams_revert')) {
     $version_data_path = drush_get_option('datastreams_source_directory') .
       DIRECTORY_SEPARATOR . 'version_data.log';
@@ -177,6 +179,14 @@ function islandora_datastream_crud_push_datastream($ds_path) {
       $object->ingestDatastream($ds);
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
       islandora_datastream_crud_write_crudlog($pid, $dsid, 'pushed');
+      if ($regenerate_dc) {
+        if (islandora_datastream_crud_regenerate_dc($pid, $dsid)) {
+          drush_log(dt("DC datastream for object !pid regenerated from !dsid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
+        }
+        else {
+          drush_log(dt("DC datastream for object !pid not regenerated from !dsid", array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+        }
+      }
       return $pid;
     }
     catch (Exception $e) {
@@ -346,18 +356,22 @@ function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
  *
  * @param string $source_dsid
  *   The source datastream.
+ *
+ * @return bool
+ *   TRUE if the DC was regenerated and replaced, FALSE otherwise.
  */
-function islandora_datastream_crud_regenerate_dc($source_dsid) {
+function islandora_datastream_crud_regenerate_dc($pid, $source_dsid) {
   // Get the stylesheet (it is --dc_transform).
   $xslt_path = drush_get_option('dc_transform', 'islandora_xml_forms/builder/transforms/mods_to_dc.xsl');
   if (!file_exists(realpath($xslt_path))) {
     dt('The specified XSLT stylesheet (!xslt_path) does not exist.',
       array('!xslt_path' => $xslt_path));
-    drupal_exit();
   }
+/*
   // Do the transform.
   // Add the new DC.
-  drush_log(dt("Hi from islandora_datastream_crud_regenerate_dc", 'ok'));
+*/
+  return TRUE;
 }
 
 /**
