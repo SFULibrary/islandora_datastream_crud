@@ -180,7 +180,7 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
       islandora_datastream_crud_write_crudlog($pid, $dsid, 'pushed');
       if ($regenerate_dc) {
-        if (islandora_datastream_crud_regenerate_dc($pid, $dsid)) {
+        if (islandora_datastream_crud_regenerate_dc($object, $dsid)) {
           drush_log(dt("DC datastream for object !pid regenerated from !dsid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
         }
         else {
@@ -192,7 +192,7 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
     catch (Exception $e) {
       drush_log(dt("!dsid datastream could not be pushed to object !pid; details below",
         array('!dsid' => $dsid, '!pid' => $pid)), 'error');
-      islandora_datastream_crud_write_crudlog($pid, $dsid, 'not pushed');
+      islandora_datastream_crud_write_crudlog($object->id, $dsid, 'not pushed');
       drush_log($e->getMessage(), 'error');
       return FALSE;
     }
@@ -354,23 +354,49 @@ function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
 /**
  * Regenerates DC from the specified datastream.
  *
+ * @param object $object
+ *   The Islandora object.
  * @param string $source_dsid
- *   The source datastream.
+ *   The ID of the datastream to use as the source of the DC.
  *
  * @return bool
  *   TRUE if the DC was regenerated and replaced, FALSE otherwise.
  */
-function islandora_datastream_crud_regenerate_dc($pid, $source_dsid) {
-  // Get the stylesheet (it is --dc_transform).
-  $xslt_path = drush_get_option('dc_transform', 'islandora_xml_forms/builder/transforms/mods_to_dc.xsl');
-  if (!file_exists(realpath($xslt_path))) {
-    dt('The specified XSLT stylesheet (!xslt_path) does not exist.',
-      array('!xslt_path' => $xslt_path));
+function islandora_datastream_crud_regenerate_dc($object, $source_dsid) {
+  $xslt_path = drush_get_option(
+    'dc_transform',
+    '/var/www/drupal/sites/all/modules/islandora_xml_forms/builder/transforms/mods_to_dc.xsl'
+  );
+  if (!file_exists($xslt_path)) {
+    drush_log(dt('The specified XSLT stylesheet (!xslt_path) does not exist.',
+      array('!xslt_path' => $xslt_path)), 'error');
+    return FALSE;
   }
-/*
-  // Do the transform.
-  // Add the new DC.
-*/
+
+  if (!isset($object[$source_dsid])) {
+    drush_log(dt('DC cannot be regenerated because the specified datastream (!dsid) does not exist.',
+      array('!dsid' => $source_dsid)), 'error');
+    return FALSE;
+  }
+
+  try {
+    $xsl_doc = new DOMDocument();
+    $xsl_doc->load(realpath($xslt_path));
+    $xml_doc = new DOMDocument();
+    $xml_doc->loadXML($object[$source_dsid]->content);
+    $xslt_proc = new XSLTProcessor();
+    $xslt_proc->importStylesheet($xsl_doc);
+    $dc_xml = $xslt_proc->transformToXML($xml_doc);
+    $object['DC']->setContentFromString($dc_xml);
+  }
+  catch (Exception $e) {
+    drush_log(dt("DC cannot be regenerated for !pid from its !dsid datastream because of an XSLT problem; details below",
+      array('!dsid' => $dsid, '!pid' => $object->id)), 'error');
+    islandora_datastream_crud_write_crudlog($object->id, $dsid, 'DC not regenerated');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+
   return TRUE;
 }
 

@@ -114,7 +114,7 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. Set to 0 (zero) if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is 1, but you will be prompted to confirm the DC update.' ,
       ),
       'dc_transform' => array(
-        'description' => 'Optional. Path to XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.' ,
+        'description' => 'Optional. Absolute path to the XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.' ,
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -424,7 +424,7 @@ function drush_islandora_datastream_crud_push_datastreams() {
     // may make separator not be an _.
     list($namespace, $restofthepid, $dsid) = explode('_', pathinfo($xml_files[0], PATHINFO_FILENAME));
   }
-  
+
   $regenerate_dc = FALSE;
   if (drush_get_option('update_dc', 1)) {
     if (drush_confirm(dt("Do you want to update each object's DC datastream using the new !dsid?",
