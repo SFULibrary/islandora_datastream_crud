@@ -108,9 +108,9 @@ Islandora's default behavior is to not regenerate an object's DC datastream when
 
 `Do you want to update each object's DC datastream using the new MODS? (y/n)`
 
-If you respond `y`, the DC datastream of each object represented by a pushed MODS datastream will be regenerated; if you reply n, your MODS will be pushed without regenerating the corresponding DC datastreams (in other words, following Islandora's default behavior).
+If you respond `y`, the DC datastream of each object represented by a pushed MODS datastream will be regenerated; if you reply n, the MODS files will be pushed without regenerating the corresponding DC datastreams, following Islandora's default behavior.
 
-If you are pushing non-MODS XML datastream files and want to regenerate the corresponding objects' DC datastreams from the pushed files, you will need to provide your own XSLT transform. Specify the path to your XSLT with theh `--dc_transform` parameter, e.g.,:
+If you are pushing non-MODS XML datastream files and want to regenerate the corresponding objects' DC datastreams from the pushed files, you will need to provide your own XSLT transform by specifying its absolute path with the `--dc_transform` parameter, e.g.,:
 
 `--dc_transform=/path/to/my/custom/ddi_to_dc_stylesheet.xsl`
 
