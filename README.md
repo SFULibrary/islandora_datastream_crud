@@ -102,7 +102,21 @@ Note that this command does not download datastream files from your repository; 
 
 You can also trigger derivative generation/regeneration on objects if you push OBJ datastreams up. A plausible scenario where you may want to do this is if a batch ingest fails during the derivative generation phase. By fetching a list of PIDs using the `--without_dsid` option with the ID of a derivative datastream, you can then fetch those objects' OBJ datastreams and push them back up. Not the most efficient way to trigger datastream generation. You should use this option if you want to replace the source datastream; use `islandora_datastream_crud_generate_derivatives` if just want to regenerate derivatives from an existing source datastream. 
 
+### Updating the DC datastream
 
+Islandora's default behavior is to not regenerate an object's DC datastream when its MODS datastream is replaced. Islandora Datastream CRUD lets you override this behavior by regenerating your objects' DC datastreams when pushing MODS or other XML datastreams. When you push datastream files that end in '.xml', you will be prompted to confirm that you want to regenerate your DC:
+
+`Do you want to update each object's DC datastream using the new MODS? (y/n)`
+
+If you respond `y`, the DC datastream of each object represented by a pushed MODS datastream will be regenerated; if you reply n, your MODS will be pushed without regenerating the corresponding DC datastreams (in other words, following Islandora's default behavior).
+
+If you are pushing non-MODS XML datastream files and want to regenerate the corresponding objects' DC datastreams from the pushed files, you will need to provide your own XSLT transform. Specify the path to your XSLT with theh `--dc_transform` parameter, e.g.,:
+
+`--dc_transform=/path/to/my/custom/ddi_to_dc_stylesheet.xsl`
+
+If you are not running Islandora Datastream CRUD interactively but from within a script, provide the standard Drush option `-y` to answer "yes" to all Drush prompts. If you do not want to regenerate your DC datastreams, include the option `--update_dc=0`.
+
+`
 ### Reverting datastream versions
 
 This module provides basic support for reverting the content and some attributes (mimetype and label) of a datastream to those of an earlier version. The process has two parts, 1) fetching the version of the datastream you want to revert to and 2) pushing the datastream content and attributes back. Reverting datastream versions requires that you use two special Drush options, shown here at the end of the two commands they apply to: 
