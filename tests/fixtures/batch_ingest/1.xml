@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <recordInfo>
+      <!-- If you create a custom template, be sure to include this recordOrigin element. -->
+      <recordOrigin>Islandora Sample Content Generator.</recordOrigin>
+    </recordInfo>
+    <titleInfo>
+      <title>John Hart Power Project and Town Site, Campbell River, B.C.</title>
+    </titleInfo>
+    <originInfo>
+      <place>
+        <placeTerm></placeTerm>
+      </place>
+      <publisher></publisher>
+      <dateIssued encoding="iso8601">1958</dateIssued>
+    </originInfo>
+    <abstract>An aerial view of the John Hart power project and town site in Campbell River, B.C. A forest is shown surrounding the cleared area.</abstract>
+    <language>
+      <languageTerm>eng</languageTerm>
+    </language>
+    <genre>image</genre>
+    <subject>
+                <topic>Aerial views</topic>
+            <topic>Power industry</topic>
+            <topic>Clearing of land</topic>
+                              <geographic>Campbell River, BC</geographic>
+              </subject>
+    <identifier></identifier>
+</mods>

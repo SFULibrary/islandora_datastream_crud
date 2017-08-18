@@ -3,8 +3,8 @@ language: php
 php:
   # - 5.3.3
   # - 5.4
-  # - 5.5
-  - 5.6
+  - 5.5
+  # - 5.6
   # - 7.0
   # - 7.1
 branches:
@@ -18,17 +18,20 @@ before_install:
   - git clone -b 7.x git://github.com/Islandora/islandora_solr_search.git
   - git clone -b 7.x git://github.com/Islandora/islandora_solution_pack_image.git
   - git clone -b 7.x git://github.com/Islandora/islandora_solution_pack_collection.git
+  - git clone -b 7.x git://github.com/Islandora/islandora_batch.git
   - export ISLANDORA_DIR=$HOME/islandora
   - $HOME/islandora/tests/scripts/travis_setup.sh
   - cd $HOME/drupal-*
   - ln -s $HOME/islandora_solr_search sites/all/modules/islandora_solr_search
   - ln -s $HOME/islandora_solution_pack_image sites/all/modules/islandora_solution_pack_image
   - ln -s $HOME/islandora_solution_pack_collection sites/all/modules/islandora_solution_pack_collection
+  - ln -s $HOME/islandora_batch sites/all/modules/islandora_batch
   - ln -s $TRAVIS_BUILD_DIR sites/all/modules/islandora_datastream_crud
   - drush en --yes --user=1 islandora_solr
   - drush en --yes --user=1 islandora_datastream_crud
   - drush en --yes --user=1 islandora_basic_collection
   - drush en --yes --user=1 islandora_basic_image
+  - drush en --yes --user=1 islandora_batch
 before_script:
   # Mysql might time out for long tests, increase the wait timeout.
   - mysql -e 'SET @@GLOBAL.wait_timeout=1200'

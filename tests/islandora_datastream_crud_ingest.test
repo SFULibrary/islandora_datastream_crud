@@ -31,6 +31,7 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
       'islandora_basic_image',
       'islandora_basic_collection',
       'islandora_solr',
+      'islandora_batch',
       'islandora_datastream_crud',
     ));
   }
@@ -49,33 +50,27 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
     ));
     $this->drupalLogin($user);
 
-    $label = $this->randomName(16);
-    $suffix = $this->randomName(16);
-    $collectionpid = 'islandora:' . $suffix;
-    $this->createTestCollection($label, 'islandora:sp_basic_image', $collectionpid);
+    $this->createTestCollection($label, 'islandora:sp_basic_image', 'islandora:testcollection');
 
-    // Attempts to create an object.
-    $path = 'islandora/object/' . $collectionpid . '/manage/overview/ingest';
-    $edit = array();
-    $file = drupal_get_path('module', 'islandora_basic_image') . '/tests/fixtures/test.jpg';
-    $edit['files[file]'] = $file;
-    $this->drupalPost($path, $edit, t('Ingest'));
-    $this->assertText('New Object', 'Image object was created', 'Islandora');
-    $path = $this->url;
-    $imagepath = $path . '/datastream/OBJ/view';
-    $this->assertLinkByHref($imagepath, 0, t('Ingested image found on view page'), t('Islandora'));
+    $batch_target_dir = drupal_get_path('module', 'islandora_datastream_crud') . '/tests/fixtures/batch_ingest';
+    $batch_ingest_cmd = "drush -v -u 1 islandora_batch_scan_preprocess --content_models=islandora:sp_basic_image --parent=islandora:testcollection --parent_relationship_pred=isMemberOfCollection --type=directory --namespace=testing --target=" . $batch_target_dir;
+    exec($batch_ingest_cmd);
+    exec("drush -v -u 1 islandora_batch_ingest");
 
-    // Determines whether or not the appropriate datastreams were created.
-    $object = $this->getObjectFromPath($this->url);
-    $datastreams = array(
-      'RELS-EXT',
-      'DC',
-      'OBJ',
-      'TN',
-      'MEDIUM_SIZE',
-    );
-    $this->assertDatastreams($object, $datastreams);
+    $pids = array('testing:1', 'testing:2', 'testing:3');
+    foreach ($pids as $pid) {
+      $object = $this->getObjectFromPath('islandora/object/' . $pid);
+      $datastreams = array(
+        'RELS-EXT',
+        'DC',
+        'OBJ',
+        'TN',
+        'MEDIUM_SIZE',
+      );
+      $this->assertDatastreams($object, $datastreams);
+    }
 
+/*
     // Push a new datastream.
     $datastreams_dir = drupal_get_path('module', 'islandora_datastream_crud') . '/tests/fixtures/datastream_crud';
     $crud_cmd = "drush islandora_datastream_crud_push_datastreams --user=1 -y --datastreams_source_directory=" . $datastreams_dir;
@@ -88,5 +83,6 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
       array('MEDIUM_SIZE', 'image'),
     );
     $this->validateDatastreams($object, $datastreams);
+*/
   }
 }

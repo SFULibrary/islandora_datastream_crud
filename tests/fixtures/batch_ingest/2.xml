@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <recordInfo>
+      <!-- If you create a custom template, be sure to include this recordOrigin element. -->
+      <recordOrigin>Islandora Sample Content Generator.</recordOrigin>
+    </recordInfo>
+    <titleInfo>
+      <title>Municipal Hall of Maple Ridge, Haney, B.C.</title>
+    </titleInfo>
+    <originInfo>
+      <place>
+        <placeTerm></placeTerm>
+      </place>
+      <publisher></publisher>
+      <dateIssued encoding="iso8601">1963</dateIssued>
+    </originInfo>
+    <abstract>Maple Ridge municipal hall in Haney, B.C.</abstract>
+    <language>
+      <languageTerm>eng</languageTerm>
+    </language>
+    <genre>image</genre>
+    <subject>
+                <topic>City &amp; town halls</topic>
+                              <geographic>Haney, BC</geographic>
+              </subject>
+    <identifier></identifier>
+</mods>
