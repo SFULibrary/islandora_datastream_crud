@@ -14,7 +14,7 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
    */
   public static function getInfo() {
     return array(
-      'name' => 'Basic Image Ingest',
+      'name' => 'Islandora Datastream CRUD Image Ingest',
       'description' => 'Ingests an image into a randomly generated image collection',
       'group' => 'Islandora Datastream CRUD',
     );
