@@ -16,15 +16,24 @@ before_install:
   - cd $HOME
   - git clone -b 7.x git://github.com/Islandora/islandora.git
   - git clone -b 7.x git://github.com/Islandora/islandora_solr_search.git
+  - git clone -b 7.x git://github.com/Islandora/islandora_solution_pack_image.git
+  - git clone -b 7.x git://github.com/Islandora/islandora_solution_pack_collection.git
   - export ISLANDORA_DIR=$HOME/islandora
   - $HOME/islandora/tests/scripts/travis_setup.sh
   - cd $HOME/drupal-*
   - ln -s $HOME/islandora_solr_search sites/all/modules/islandora_solr_search
+  - ln -s $HOME/islandora_solution_pack_image sites/all/modules/islandora_solution_pack_image
+  - ln -s $HOME/islandora_solution_pack_collection sites/all/modules/islandora_solution_pack_collection
   - ln -s $TRAVIS_BUILD_DIR sites/all/modules/islandora_datastream_crud
   - drush en --yes --user=1 islandora_solr
   - drush en --yes --user=1 islandora_datastream_crud
+  - drush en --yes --user=1 islandora_basic_collection
+  - drush en --yes --user=1 islandora_basic_image
+before_script:
+  # Mysql might time out for long tests, increase the wait timeout.
+  - mysql -e 'SET @@GLOBAL.wait_timeout=1200'
 script:
   - $ISLANDORA_DIR/tests/scripts/line_endings.sh sites/all/modules/islandora_datastream_crud
   - drush coder-review --reviews=production,security,style,i18n,potx,sniffer islandora_datastream_crud
   - phpcpd --names *.module,*.inc sites/all/modules/islandora_datastream_crud
-  - drush test-run --uri=http://localhost:8081 "Islandora Datastream CRUD"
+  - php scripts/run-tests.sh --php `phpenv which php` --url http://localhost:8081 --verbose "Islandora Datastream CRUD"
