@@ -69,20 +69,5 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
       );
       $this->assertDatastreams($object, $datastreams);
     }
-
-/*
-    // Push a new datastream.
-    $datastreams_dir = drupal_get_path('module', 'islandora_datastream_crud') . '/tests/fixtures/datastream_crud';
-    $crud_cmd = "drush islandora_datastream_crud_push_datastreams --user=1 -y --datastreams_source_directory=" . $datastreams_dir;
-    exec($crud_cmd);
-    $this->assertDatastreams($object, array('FOO'));
-
-    $datastreams = array(
-      array('OBJ', 'image'),
-      array('TN', 'image'),
-      array('MEDIUM_SIZE', 'image'),
-    );
-    $this->validateDatastreams($object, $datastreams);
-*/
   }
 }
