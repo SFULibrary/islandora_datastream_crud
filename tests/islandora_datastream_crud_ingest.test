@@ -50,7 +50,7 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
     ));
     $this->drupalLogin($user);
 
-    $this->createTestCollection($label, 'islandora:sp_basic_image', 'islandora:testcollection');
+    $this->createTestCollection('Test collection', 'islandora:sp_basic_image', 'islandora:testcollection');
 
     $batch_target_dir = drupal_get_path('module', 'islandora_datastream_crud') . '/tests/fixtures/batch_ingest';
     $batch_ingest_cmd = "drush -v -u 1 islandora_batch_scan_preprocess --content_models=islandora:sp_basic_image --parent=islandora:testcollection --parent_relationship_pred=isMemberOfCollection --type=directory --namespace=testing --target=" . $batch_target_dir;
