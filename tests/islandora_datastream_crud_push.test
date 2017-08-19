@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Attempts to ingest an image into a randomly generated image collection.
+ * Attempts to push some datastreams.
  */
 
-class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCase {
+class IslandoraDatastreamCrudPushDatastreamsTestCase extends IslandoraCollectionWebTestCase {
 
   /**
    * Get test information.
@@ -14,8 +14,8 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
    */
   public static function getInfo() {
     return array(
-      'name' => 'Islandora Datastream CRUD Image Ingest',
-      'description' => 'Ingests an image into a randomly generated image collection',
+      'name' => 'Islandora Datastream CRUD Push Ingest',
+      'description' => 'Pushes new datastreams to some objects.',
       'group' => 'Islandora Datastream CRUD',
     );
   }
@@ -37,9 +37,9 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
   }
 
   /**
-   * Creates an administrative user and attempts to ingest a test image.
+   * Creates a user, ingests some objects, and attempts to push some datastreams.
    */
-  public function testIngestPurgeBasicImage() {
+  public function testPushDatastreams() {
     $user = $this->drupalCreateUser(array(
       'view fedora repository objects',
       'ingest fedora objects',
@@ -57,6 +57,11 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
     exec($batch_ingest_cmd);
     exec("drush -v -u 1 islandora_batch_ingest");
 
+    // Push some FOO datastreams.
+    $datastreams_dir = drupal_get_path('module', 'islandora_datastream_crud') . '/tests/fixtures/datastream_crud';
+    $crud_cmd = "drush islandora_datastream_crud_push_datastreams --user=1 -y --datastreams_source_directory=" . $datastreams_dir;
+    exec($crud_cmd);
+
     $pids = array('testing:1', 'testing:2', 'testing:3');
     foreach ($pids as $pid) {
       $object = $this->getObjectFromPath('islandora/object/' . $pid);
@@ -66,6 +71,7 @@ class IslandoraDatastreamCrudIngestTestCase extends IslandoraCollectionWebTestCa
         'OBJ',
         'TN',
         'MEDIUM_SIZE',
+        'FOO',
       );
       $this->assertDatastreams($object, $datastreams);
     }
