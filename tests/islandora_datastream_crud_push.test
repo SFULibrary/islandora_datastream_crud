@@ -37,7 +37,7 @@ class IslandoraDatastreamCrudPushDatastreamsTestCase extends IslandoraCollection
   }
 
   /**
-   * Creates a user, ingests some objects, and attempts to push some datastreams.
+   * Creates a user, ingests objects, and attempts to push some datastreams.
    */
   public function testPushDatastreams() {
     $user = $this->drupalCreateUser(array(
