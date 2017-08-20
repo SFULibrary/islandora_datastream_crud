@@ -57,7 +57,7 @@ Contributions to the Islandora Datastream CRUD codebase should be sent as GitHub
     3. The Islandora Datastream CRUD maintainers will work with you on the design to make sure you are on the right track.
     4. Implement your issue, create a pull request (see below), and iterate from there.
     5. Please run `drush dcs --extensions=inc` and `drush coder-review --reviews=production,security,style,i18n,potx,sniffer islandora_datastream_crud` before committing to your branch.
-
+    6. If you code is testable, please add appropriate tests.
 
 #### Issue / Topic Branches
 

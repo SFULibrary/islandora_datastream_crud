@@ -7,3 +7,4 @@ dependencies[] = islandora
 dependencies[] = islandora_solr
 files[] = includes/utilities.inc
 files[] = tests/islandora_datastream_crud_push.test
+files[] = tests/utilities.inc

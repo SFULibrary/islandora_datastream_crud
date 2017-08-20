@@ -19,6 +19,8 @@ Commands are inspired by a simple Git workflow (fetch, push, delete).
 
 Note that you can include Drush's `-y` option to bypass confirmation prompts. This is useful if you are running Datastream CRUD in a `nohup` or scripted environment.
 
+If you would prefer to avoid using Drush, [Islandora Datastreams Input/Output](https://github.com/ulsdevteam/islandora_datastreams_io) provides a way to run Datastream CRUD from within Drupal's administrative user interface).
+
 ## Fetching PIDs
 
 The `islandora_datastream_crud_fetch_pids` command provides several options for specifying which objects you want datastreams from:
@@ -204,9 +206,6 @@ Scripts that do the work of updating datastreams, especially for MODS datastream
 
 ## Wishlist
 
-* A graphical user interface
-* Use the Drupal Batch framework, like the Islandora Batch modules do
-* Add automated tests
 * The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection. If this is a problem for you, and all of the objects in your collection use the same namespace, use the `--namespace` option to get your PIDs instead of the `--collection` option.
 * Does not work with datastreams in the (R)edirect and (E)xternal Referenced control groups - use cases are welcome.
 
