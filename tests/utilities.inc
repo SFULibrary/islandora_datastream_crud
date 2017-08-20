@@ -18,7 +18,7 @@ class ChecksumDatastreamValidator extends DatastreamValidator {
    * Asserts that the datastream has the expected sha1 checksum. 
    */
   protected function assertChecksumMatches() {
-    $sha1 = sha1($this->datastreamContent);
+    $sha1 = trim(sha1($this->datastreamContent));
     if ($sha1 == $this->params['sha1']) {
       $this->addResult(TRUE, "SHA1 checksum for object {$this->object->id} / {$this->datastream} matches.");
     }
