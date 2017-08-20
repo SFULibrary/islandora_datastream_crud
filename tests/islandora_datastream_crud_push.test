@@ -62,18 +62,18 @@ class IslandoraDatastreamCrudPushDatastreamsTestCase extends IslandoraCollection
     $crud_cmd = "drush islandora_datastream_crud_push_datastreams --user=1 -y --datastreams_source_directory=" . $datastreams_dir;
     exec($crud_cmd);
 
-    $pids = array(
-      // Checksums are on the datastream content, not the file.
+    $checksums = array(
+      // Checksums apply to the datastream content, not the file.
       'testing:1' => 'dedd905e0c2f3e35ad0a361d3623921a47c284b4',
       'testing:2' => 'a5db5865b73ae0fb8c7223425e99befd189b41ce',
       'testing:3' => '30c8f397602d1b08ba56f88ec1fa769f3091a755',
     );
-    foreach ($pids as $pid => $sha1) {
+    foreach ($checksums as $pid => $sha1) {
       $object = $this->getObjectFromPath('islandora/object/' . $pid);
       $datastreams = array(
         array('FOO', 'checksum', array('sha1' => $sha1)),
       );
-      $this->assertDatastreams($object, $datastreams);
+      $this->validateDatastreams($object, $datastreams);
     }
   }
 }
