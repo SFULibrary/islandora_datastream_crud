@@ -20,10 +20,10 @@ class ChecksumDatastreamValidator extends DatastreamValidator {
   protected function assertChecksumMatches() {
     $sha1 = sha1($this->datastreamContent);
     if ($sha1 == $this->params['sha1']) {
-      $this->addResult(TRUE, "SHA1 checksum for object {$this->object->id} / {this->datastream} matches.");
+      $this->addResult(TRUE, "SHA1 checksum for object {$this->object->id} / {$this->datastream} matches.");
     }
     else {
-      $this->addResult(FALSE, "SHA1 checksum for object {$this->object->id} / {this->datastream} does not match.");
+      $this->addResult(FALSE, "SHA1 checksum for object {$this->object->id} / {$this->datastream} does not match (expected {$this->params['sha1']}, got $sha1).");
     }
   }
 }
