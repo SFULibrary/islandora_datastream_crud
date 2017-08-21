@@ -63,10 +63,11 @@ class IslandoraDatastreamCrudPushDatastreamsTestCase extends IslandoraCollection
     exec($crud_cmd);
 
     $checksums = array(
-      // Checksums apply to the datastream content, not the file.
-      'testing:1' => 'dedd905e0c2f3e35ad0a361d3623921a47c284b4',
-      'testing:2' => 'a5db5865b73ae0fb8c7223425e99befd189b41ce',
-      'testing:3' => '30c8f397602d1b08ba56f88ec1fa769f3091a755',
+      // Each checksums is generated from the datastream file using linux's
+      // sha1sum.
+      'testing:1' => '1970dce0be2215876428151464eaa12dc72d5e54',
+      'testing:2' => 'ab9a55603d33156a380bd0ca66b0f0c65ecf2e37',
+      'testing:3' => '60ef11c0d33b763cef5c1b63410322d989f030bf',
     );
     foreach ($checksums as $pid => $sha1) {
       $object = $this->getObjectFromPath('islandora/object/' . $pid);
