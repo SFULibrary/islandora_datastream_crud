@@ -417,19 +417,19 @@ function drush_islandora_datastream_crud_push_datastreams() {
   // We only provide the option to generate DC from datastream files that
   // end in .xml. We need to get one such fileaname so we can determine
   // which DSID we are generating the DC from.
+  $regenerate_dc = FALSE;
   $xml_files = array_slice(array_filter(glob($source_directory .
     DIRECTORY_SEPARATOR . '*.xml'), 'is_file'), 0, 1);
   if (count($xml_files) === 1) {
     // Note: https://github.com/mjordan/islandora_datastream_crud/issues/33
     // may make separator not be an _.
     list($namespace, $restofthepid, $dsid) = explode('_', pathinfo($xml_files[0], PATHINFO_FILENAME));
-  }
 
-  $regenerate_dc = FALSE;
-  if (drush_get_option('update_dc', 1)) {
-    if (drush_confirm(dt("Do you want to update each object's DC datastream using the new !dsid?",
-      array('!dsid' => $dsid)))) {
-      $regenerate_dc = TRUE;
+    if (drush_get_option('update_dc', 1)) {
+      if (drush_confirm(dt("Do you want to update each object's DC datastream using the new !dsid?",
+        array('!dsid' => $dsid)))) {
+        $regenerate_dc = TRUE;
+      }
     }
   }
 
