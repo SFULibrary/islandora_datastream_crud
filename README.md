@@ -19,7 +19,7 @@ Commands are inspired by a simple Git workflow (fetch, push, delete).
 
 Note that you can include Drush's `-y` option to bypass confirmation prompts. This is useful if you are running Datastream CRUD in a `nohup` or scripted environment.
 
-If you would prefer to avoid using Drush, [Islandora Datastreams Input/Output](https://github.com/ulsdevteam/islandora_datastreams_io) provides a way to run Datastream CRUD from within Drupal's administrative user interface).
+If you would prefer to avoid using Drush, [Islandora Datastreams Input/Output](https://github.com/ulsdevteam/islandora_datastreams_io) provides a way to run Datastream CRUD from within Drupal's administrative user interface.
 
 ## Fetching PIDs
 

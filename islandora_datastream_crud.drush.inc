@@ -94,7 +94,7 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. The MIME type to apply to the new datastreams. If absent, the existing MiME type is used.' ,
       ),
       'datastreams_label' => array(
-        'description' => 'Optional. The label to apply to the new datastreams. Enclose in quotation marks. If absent and the datastream exists, the original label is retained. If absent and the datastream is being created, no labl is applied.' ,
+        'description' => 'Optional. The label to apply to the new datastreams. Enclose in quotation marks. If absent and the datastream exists, the original label is retained. If absent and the datastream is being created, no label is applied.' ,
       ),
       'datastreams_crud_log' => array(
         'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.' ,
@@ -107,7 +107,7 @@ function islandora_datastream_crud_drush_command() {
         'value' => 'optional',
       ),
       'update_object_label' => array(
-        'description' => 'Optional. Include if the push of DC datastream has to update object label derived from DC title element.' ,
+        'description' => 'Optional. Include if the push of DC datastream is to update each object\'s label derived from DC title element. Will be deprecated at end of 2017 as described in issue 38.' ,
         'value' => 'optional',
       ),
       'update_dc' => array(
