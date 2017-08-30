@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Simple script to perform search and replace in text/XLM files
+ * Simple script to perform search and replace in text/XML files
  *
  * Usage:
  *
