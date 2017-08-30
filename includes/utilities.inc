@@ -365,7 +365,7 @@ function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
 function islandora_datastream_crud_regenerate_dc($object, $source_dsid) {
   $xslt_path = drush_get_option(
     'dc_transform',
-    '/var/www/drupal/sites/all/modules/islandora_xml_forms/builder/transforms/mods_to_dc.xsl'
+    drupal_get_path('module', 'xml_forms') . '/builder/transforms/mods_to_dc.xsl'
   );
   if (!file_exists($xslt_path)) {
     drush_log(dt('The specified XSLT stylesheet (!xslt_path) does not exist.',
