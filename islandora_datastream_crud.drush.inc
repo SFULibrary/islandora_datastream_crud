@@ -160,11 +160,17 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'The source datastream ID.' ,
         'required' => TRUE,
       ),
+      'dest_dsids' => array(
+        'description' => 'Optional. A comma-separated list of datastream IDs to generate. If absent, all derivatives will be generated.' ,
+      ),
+      'skip_dsids' => array(
+        'description' => 'Optional. A comma-separated list of datastream IDs to skip. If used with --dest_dsids, that option will be ignored.' ,
+      ),
       'datastreams_crud_log' => array(
         'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.' ,
       ),
       'pause' => array(
-        'description' => 'Optional. Number of seconds to pause before deleting the next datastream.' ,
+        'description' => 'Optional. Number of seconds to pause between objects.' ,
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
