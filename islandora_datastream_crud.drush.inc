@@ -25,19 +25,19 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'The namespace of the objects you want to update.',
       ),
       'collection' => array(
-        'description' => 'The PID of the collection from which to select the objects.' ,
+        'description' => 'The PID of the collection from which to select the objects.',
       ),
       'with_dsid' => array(
-        'description' => 'Limit to objects that have a datastream with the specified datastream ID.' ,
+        'description' => 'Limit to objects that have a datastream with the specified datastream ID.',
       ),
       'without_dsid' => array(
-        'description' => 'Limit to objects that do not have a datastream with the specified datastream ID.' ,
+        'description' => 'Limit to objects that do not have a datastream with the specified datastream ID.',
       ),
       'solr_query' => array(
-        'description' => 'A raw Solr query. If the --solr_query option is present, it overrides --content_model, --namespace, and --collection.' ,
+        'description' => 'A raw Solr query. If the --solr_query option is present, it overrides --content_model, --namespace, and --collection.',
       ),
       'pid_file' => array(
-        'description' => 'Absolute path to the file where you want the PID list to be saved. If absent, PIDs will be written to STDOUT.' ,
+        'description' => 'Absolute path to the file where you want the PID list to be saved. If absent, PIDs will be written to STDOUT.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -51,25 +51,25 @@ function islandora_datastream_crud_drush_command() {
     ),
     'options' => array(
       'dsid' => array(
-        'description' => 'Datastream ID.' ,
+        'description' => 'Datastream ID.',
         'required' => TRUE,
       ),
       'pid_file' => array(
-        'description' => 'Absolute path to the file that lists PIDs for objects you want to fetch datastreams from.' ,
+        'description' => 'Absolute path to the file that lists PIDs for objects you want to fetch datastreams from.',
         'required' => TRUE,
       ),
       'datastreams_directory' => array(
-        'description' => 'Absolute path to the directory where you want the datastream files to be saved.' ,
+        'description' => 'Absolute path to the directory where you want the datastream files to be saved.',
         'required' => TRUE,
       ),
       'datastreams_extension' => array(
-        'description' => "Optional. The file extension, without the period, to give the datastream files. If absent, Islandora will assign an extension based on the datastream's MIME type." ,
+        'description' => "Optional. The file extension, without the period, to give the datastream files. If absent, Islandora will assign an extension based on the datastream's MIME type.",
       ),
       'datastreams_version' => array(
-        'description' => 'Optional. The version number of the datastream. 0 is the current version (the default, so you wouldn\'t normally specify it), 1 is the previous version, 2 is the version before that, etc.' ,
+        'description' => 'Optional. The version number of the datastream. 0 is the current version (the default, so you wouldn\'t normally specify it), 1 is the previous version, 2 is the version before that, etc.',
       ),
       'pause' => array(
-        'description' => 'Optional. Number of seconds to pause before fetching the next datastream.' ,
+        'description' => 'Optional. Number of seconds to pause before fetching the next datastream.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -84,37 +84,37 @@ function islandora_datastream_crud_drush_command() {
     ),
     'options' => array(
       'datastreams_source_directory' => array(
-        'description' => 'Absolute path to the directory where updated datastream files are stored.' ,
+        'description' => 'Absolute path to the directory where updated datastream files are stored.',
         'required' => TRUE,
       ),
       'pid_file' => array(
-        'description' => 'Optional. Absolute path to the file that lists PIDs for objects you want to push datastreams to. If absent, all of the datastreams in the source directory will be pushed' ,
+        'description' => 'Optional. Absolute path to the file that lists PIDs for objects you want to push datastreams to. If absent, all of the datastreams in the source directory will be pushed',
       ),
       'datastreams_mimetype' => array(
-        'description' => 'Optional. The MIME type to apply to the new datastreams. If absent, the existing MiME type is used.' ,
+        'description' => 'Optional. The MIME type to apply to the new datastreams. If absent, the existing MiME type is used.',
       ),
       'datastreams_label' => array(
-        'description' => 'Optional. The label to apply to the new datastreams. Enclose in quotation marks. If absent and the datastream exists, the original label is retained. If absent and the datastream is being created, no label is applied.' ,
+        'description' => 'Optional. The label to apply to the new datastreams. Enclose in quotation marks. If absent and the datastream exists, the original label is retained. If absent and the datastream is being created, no label is applied.',
       ),
       'datastreams_crud_log' => array(
         'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.' ,
       ),
       'pause' => array(
-        'description' => 'Optional. Number of seconds to pause before pushing the next datastream.' ,
+        'description' => 'Optional. Number of seconds to pause before pushing the next datastream.',
       ),
       'datastreams_revert' => array(
-        'description' => 'Optional. Include if the push is to revert datastream versions.' ,
+        'description' => 'Optional. Include if the push is to revert datastream versions.',
         'value' => 'optional',
       ),
       'update_object_label' => array(
-        'description' => 'Optional. Include if the push of DC datastream is to update each object\'s label derived from DC title element. Will be deprecated at end of 2017 as described in issue 38.' ,
+        'description' => 'Optional. Include if the push of DC datastream is to update each object\'s label derived from DC title element. Will be deprecated at end of 2017 as described in issue 38.',
         'value' => 'optional',
       ),
       'update_dc' => array(
-        'description' => 'Optional. Set to 0 (zero) if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is 1, but you will be prompted to confirm the DC update.' ,
+        'description' => 'Optional. Set to 0 (zero) if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is 1, but you will be prompted to confirm the DC update.',
       ),
       'dc_transform' => array(
-        'description' => 'Optional. Absolute path to the XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.' ,
+        'description' => 'Optional. Absolute path to the XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -128,18 +128,18 @@ function islandora_datastream_crud_drush_command() {
     ),
     'options' => array(
       'pid_file' => array(
-        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.' ,
+        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.',
         'required' => TRUE,
       ),
       'dsid' => array(
-        'description' => 'Datastream ID.' ,
+        'description' => 'Datastream ID.',
         'required' => TRUE,
       ),
       'datastreams_crud_log' => array(
-        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.' ,
+        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.',
       ),
       'pause' => array(
-        'description' => 'Optional. Number of seconds to pause before deleting the next datastream.' ,
+        'description' => 'Optional. Number of seconds to pause before deleting the next datastream.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -153,24 +153,24 @@ function islandora_datastream_crud_drush_command() {
     ),
     'options' => array(
       'pid_file' => array(
-        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.' ,
+        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.',
         'required' => TRUE,
       ),
       'source_dsid' => array(
-        'description' => 'The source datastream ID.' ,
+        'description' => 'The source datastream ID.',
         'required' => TRUE,
       ),
       'dest_dsids' => array(
-        'description' => 'Optional. A comma-separated list of datastream IDs to generate. If absent, all derivatives will be generated.' ,
+        'description' => 'Optional. A comma-separated list of datastream IDs to generate. If absent, all derivatives will be generated.',
       ),
       'skip_dsids' => array(
-        'description' => 'Optional. A comma-separated list of datastream IDs to skip. If used with --dest_dsids, that option will be ignored.' ,
+        'description' => 'Optional. A comma-separated list of datastream IDs to skip. If absent, all derivatives will be generated.',
       ),
       'datastreams_crud_log' => array(
-        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.' ,
+        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.',
       ),
       'pause' => array(
-        'description' => 'Optional. Number of seconds to pause between objects.' ,
+        'description' => 'Optional. Number of seconds to pause between objects.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -184,30 +184,30 @@ function islandora_datastream_crud_drush_command() {
     ),
     'options' => array(
       'pid_file' => array(
-        'description' => 'Absolute path to the file that lists PIDs for objects whose properties you want to update.' ,
+        'description' => 'Absolute path to the file that lists PIDs for objects whose properties you want to update.',
         'required' => TRUE,
       ),
       'owner' => array(
-        'description' => "The object's owner." ,
+        'description' => "The object's owner.",
       ),
       'state' => array(
-        'description' => "The object's state (A/I/D)." ,
+        'description' => "The object's state (A/I/D).",
       ),
       'update_object_label' => array(
-        'description' => "Include if you want to update the object's label from either a MODS or DC element." ,
+        'description' => "Include if you want to update the object's label from either a MODS or DC element.",
         'value' => 'optional' ,
       ),
       'source_dsid' => array(
-        'description' => "Tells the 'update_object_label' option which datastream to use as the source of the label." ,
+        'description' => "Tells the 'update_object_label' option which datastream to use as the source of the label.",
       ),
       'source_xpath' => array(
-        'description' => "Xpath expression that tells the 'update_object_label' option where to find the label value. Must be wrapped in double quotation marks." ,
+        'description' => "Xpath expression that tells the 'update_object_label' option where to find the label value. Must be wrapped in double quotation marks.",
       ),
       'concat_string' => array(
-        'description' => "String used to join repeated values retrieved by --source_xpath. Default is a single space." ,
+        'description' => "String used to join repeated values retrieved by --source_xpath. Default is a single space.",
       ),
       'datastreams_crud_log' => array(
-        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, old value of the property, and new value of the property will be written to the specified file.' ,
+        'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, old value of the property, and new value of the property will be written to the specified file.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
