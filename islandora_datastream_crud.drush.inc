@@ -609,3 +609,35 @@ function drush_islandora_datastream_crud_update_object_properties_validate() {
     drush_set_error('INVALID_OBJECT_STATE_PROVIDED', NULL, dt("Value of the --state option must be one of 'A', 'I', or 'D'. "));
   }
 }
+
+/**
+ * Implements hook_islandora_derivative_alter().
+ */
+function islandora_datastream_crud_islandora_derivative_alter(&$derivatives, AbstractObject $object) {
+  if (drush_get_option('dest_dsids', FALSE)) {
+    $dsid_list = drush_get_option('dest_dsids');
+    $dsid_list = rtrim($dsid_list, ',');
+    $dsids = explode(',', $dsid_list);
+    foreach ($dsids as &$dsid) {
+      $dsid = trim($dsid);
+    }
+    foreach ($derivatives as $key => $derivative) {
+      if (!in_array($derivative['destination_dsid'], $dsids)) {
+        unset($derivatives[$key]);
+      }
+    }
+  }
+  if (drush_get_option('skip_dsids', FALSE)) {
+    $dsid_list = drush_get_option('skip_dsids');
+    $dsid_list = rtrim($dsid_list, ',');
+    $dsids = explode(',', $dsid_list);
+    foreach ($dsids as &$dsid) {
+      $dsid = trim($dsid);
+    }
+    foreach ($derivatives as $key => $derivative) {
+      if (in_array($derivative['destination_dsid'], $dsids)) {
+        unset($derivatives[$key]);
+      }
+    }
+  }
+}
