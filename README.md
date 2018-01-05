@@ -102,6 +102,13 @@ This module offers a command, `islandora_datastream_crud_generate_derivatives`, 
 
 Note that this command does not download datastream files from your repository; it generates the derivatives directly from the datastream identified by the `--source_dsid` option.
 
+`islandora_datastream_crud_generate_derivatives` provides two options to let you limit what derivatives are generated:
+
+* e.g., `--dest_dsids=TN`
+* e.g., `--skip_dsids=TN,MEDIUM_SIZE`
+
+The former restricts the generated derivatives to a comma-separated list of DSIDs, and the latter generates all derivatives other than the ones specified in a comma-separated list. The two options are meant to be mutually exclusive and should not be used together.
+
 You can also trigger derivative generation/regeneration on objects if you push OBJ datastreams up. A plausible scenario where you may want to do this is if a batch ingest fails during the derivative generation phase. By fetching a list of PIDs using the `--without_dsid` option with the ID of a derivative datastream, you can then fetch those objects' OBJ datastreams and push them back up. Not the most efficient way to trigger datastream generation. You should use this option if you want to replace the source datastream; use `islandora_datastream_crud_generate_derivatives` if just want to regenerate derivatives from an existing source datastream. 
 
 ### Updating DC datastreams by pushing other XML datastreams
