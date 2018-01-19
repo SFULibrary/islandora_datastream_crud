@@ -105,7 +105,7 @@ Note that this command does not download datastream files from your repository; 
 `islandora_datastream_crud_generate_derivatives` provides two options to let you limit what derivatives are generated:
 
 * e.g., `--dest_dsids=TN`
-* e.g., `--skip_dsids=TN,MEDIUM_SIZE`
+* e.g., `--skip_dsids=OCR,TECHMD`
 
 The former restricts the generated derivatives to a comma-separated list of DSIDs, and the latter generates all derivatives other than the ones specified in a comma-separated list. The two options are meant to be mutually exclusive and should not be used together.
 
