@@ -241,19 +241,12 @@ function drush_islandora_datastream_crud_fetch_pids() {
       }
     }
   }
-/*  if (drush_get_option('is_member_of')) {
-    if (!islandora_object_load(drush_get_option('is_member_of))) {
-      drush_set_error('COLLECTION_NOT_FOUND',
-        dt('The specified parent object (!is_member_of) is not found or is not accessible.',
-        array('!is_member_of' => drush_get_option('is_member_of'))));
-      }
-  } */
 
   // Build the Solr query.
   $query = '';
   $query_parts = array();
   if (drush_get_option('is_member_of')) {
-    $query_parts[] = 'RELS_EXT_isMemberOf_uri_t' . ':"' . drush_get_option('is_member_of'). '"';
+    $query_parts[] = 'RELS_EXT_isMemberOf_uri_t' . ':"' . drush_get_option('is_member_of') . '"';
   }
   if (drush_get_option('collection')) {
     $query_parts[] = 'RELS_EXT_isMemberOfCollection_uri_t' . ':"' . drush_get_option('collection') . '"';
