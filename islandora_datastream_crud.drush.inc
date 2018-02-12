@@ -27,6 +27,9 @@ function islandora_datastream_crud_drush_command() {
       'collection' => array(
         'description' => 'The PID of the collection from which to select the objects.',
       ),
+      'is_member_of' => array(
+        'description' => 'The PID of the parent with the isMemberOf relationship.',
+      ),
       'with_dsid' => array(
         'description' => 'Limit to objects that have a datastream with the specified datastream ID.',
       ),
@@ -248,6 +251,9 @@ function drush_islandora_datastream_crud_fetch_pids() {
   // Build the Solr query.
   $query = '';
   $query_parts = array();
+  if (drush_get_option('is_member_of')) {
+    $query_parts[] = 'RELS_EXT_isMemberOf_uri_t' . ':"' . drush_get_option('is_member_of') . '"';
+  }
   if (drush_get_option('collection')) {
     $query_parts[] = 'RELS_EXT_isMemberOfCollection_uri_t' . ':"' . drush_get_option('collection') . '"';
   }

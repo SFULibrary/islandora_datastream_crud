@@ -27,12 +27,13 @@ The `islandora_datastream_crud_fetch_pids` command provides several options for 
 
 * `--namespace`: Lets you specify a namespace.
 * `--collection`: Lets you specify a collection PID.
+* `--is_member_of`: Lets you specify relationships to another parent object PID such as a Newspaper or Book.
 * `--content_model`: Lets you specify a content model PID.
 * `--with_dsid`: Lets you specify the ID of a datastream that objects must have.
 * `--without_dsid`: Lets you specify the ID of a datastream that objects must not have.
 * `--solr_query`: A raw Solr query. For example, `--solr_query=*:*` will retrieve all the PIDs in your repository; `--solr_query=dc.title:foo` will retrieve all the PIDs of objects that have the string 'foo' in their DC title fields; `--solr_query="RELS_EXT_isMemberOf_uri_s:info\:fedora/dailyplanet\:1"`will retrieve all newspaper issues that are part of the newspaper "dailyplanet:1".
 
-The `--collection`, `--content_model`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--solr_query` options, if present, are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific namespace within a collection. If the `--solr_query` option is used, it overrides `--content_model'`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--collection`.
+The `--collection`, `--is_member_of`, `--content_model`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--solr_query` options, if present, are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific namespace within a collection. If the `--solr_query` option is used, it overrides `--content_model'`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--collection`.
 
 You typically save the fetched PIDs to a PID file, whose path is specified using the `--pid_file` option. See 'The PID file' section below for more information.
 
