@@ -228,6 +228,16 @@ function drush_islandora_datastream_crud_fetch_pids() {
       dt('Sorry, Islandora Solr Search not enabled.'));
   }
 
+  // If applicable, check that the specified parent object exists and
+  // is accessible; if it's not, exit with an error.
+  if (drush_get_option('is_member_of')) {
+    if (!islandora_object_load(drush_get_option('is_member_of'))) {
+      drush_set_error('PARENT_NOT_FOUND',
+        dt('The specified parent object (!is_member_of) is not found or is not accessible.',
+        array('!is_member_of' => drush_get_option('is_member_of'))));
+    }
+  }
+
   // If applicable, check that the specified collection object exists and
   // is accessible; if it's not, exit with an error. Also confirm that the
   // object has the expected content model.
