@@ -547,15 +547,19 @@ function drush_islandora_datastream_crud_generate_derivatives() {
       array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
     $options = array('force' => TRUE, 'source_dsid' => $dsid);
     $messages = islandora_do_derivatives($object, $options);
+    var_dump($messages);
     // Print the output from the derivative generation functions.
     foreach ($messages as $message) {
       if ($message['success']) {
         foreach ($message['messages'] as $ds_message) {
+          islandora_datastream_crud_write_crudlog($pid, $dsid, dt($ds_message['message'], $ds_message['message_sub']));
           drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
         }
       }
       else {
         foreach ($message['messages'] as $ds_message) {
+          drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
+          islandora_datastream_crud_write_crudlog($pid, $dsid, dt($ds_message['message'], $ds_message['message_sub']));
           drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], $ds_message['message_sub'])));
         }
       }
