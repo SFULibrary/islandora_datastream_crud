@@ -119,6 +119,10 @@ function islandora_datastream_crud_drush_command() {
       'dc_transform' => array(
         'description' => 'Optional. Absolute path to the XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.',
       ),
+      'no_derivs' => array(
+        'description' => 'Optional. Turns off all derivative generation that would otherwise result from pushing datastreams.',
+        'value' => 'optional',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -630,6 +634,9 @@ function drush_islandora_datastream_crud_update_object_properties_validate() {
  * Implements hook_islandora_derivative_alter().
  */
 function islandora_datastream_crud_islandora_derivative_alter(&$derivatives, AbstractObject $object) {
+  if (drush_get_option('no_derivs', FALSE)) {
+    $derivatives = array();
+  }
   if (drush_get_option('dest_dsids', FALSE)) {
     $dsid_list = drush_get_option('dest_dsids');
     $dsid_list = rtrim($dsid_list, ',');
