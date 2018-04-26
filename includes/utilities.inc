@@ -124,6 +124,7 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
   $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
   // Get the datastream ID from the end of the filename.
   list($namespace, $number, $dsid) = explode('_', $ds_filename);
+
   if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_path)) {
     return FALSE;
   }
@@ -145,6 +146,12 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
   }
   else {
     $object = islandora_object_load($pid);
+    if (isset($object[$dsid])) {
+      $object_had_ds = TRUE;
+    }
+    else {
+      $object_had_ds = FALSE;
+    }
     if (drush_get_option('datastreams_revert')) {
       $version_data = islandora_datastream_crud_read_version_data_log($version_data_path);
     }
@@ -176,7 +183,11 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
     }
 
     try {
-      $object->ingestDatastream($ds);
+      // We only need to ingestDatastream() if it doesn't already exist.
+      // setContentFromFile() updates the datastream content if it does exist.
+      if (!$object_had_ds) {
+        $object->ingestDatastream($ds);
+      }
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
       islandora_datastream_crud_write_crudlog($pid, $dsid, 'pushed');
       if ($regenerate_dc) {
