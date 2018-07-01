@@ -157,11 +157,11 @@ function islandora_datastream_crud_drush_command() {
     'aliases' => array('idcrudgd'),
     'description' => 'Generate or regenerate derivative datastreams from a source DSID.',
     'examples' => array(
-      'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --pid_file=/tmp/delete_foo_from_these_objects.txt',
+      'drush islandora_datastream_crud_generate_derivatives --user=admin --source_dsid=OBJ --pid_file=/tmp/regenerate_derivatives_for_these_objects.txt',
     ),
     'options' => array(
       'pid_file' => array(
-        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.',
+        'description' => 'Absolute path to the file that lists PIDs for objects you want to generate derivatives for.',
         'required' => TRUE,
       ),
       'source_dsid' => array(
