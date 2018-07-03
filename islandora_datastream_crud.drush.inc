@@ -616,6 +616,13 @@ function drush_islandora_datastream_crud_generate_rels_int() {
           array('!pid' => $pid)));
       continue;
     }
+    // Check for JP2.
+    if (!$object['JP2']) {
+      drush_set_error('NO_JP2_DATASTREAM',
+        dt('The specified object (!pid) does not contain a JP2 datastream.',
+          array('!pid' => $pid)));
+      continue;
+    }
     // Generate RELS-INT.
     drush_log(dt('Please be patient, generating the RELS-INT datastream for !pid',
       array('!pid' => $pid)), 'ok');
