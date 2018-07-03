@@ -184,6 +184,21 @@ function islandora_datastream_crud_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
 
+  $items['islandora_datastream_crud_generate_rels_int'] = array(
+    'aliases' => array('idcrudgri'),
+    'description' => 'Generate a RELS-INT datastream for pre-generated Paged Content JPEG 2000 images.',
+    'examples' => array(
+      'drush islandora_datastream_crud_generate_rels_int --user=admin --pid_file=/tmp/page_pids.txt',
+    ),
+    'options' => array(
+      'pid_file' => array(
+        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.',
+        'required' => TRUE,
+      ),
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
+  );
+
   $items['islandora_datastream_crud_update_object_properties'] = array(
     'aliases' => array('idcrudop'),
     'description' => 'Update object properties.',
@@ -565,6 +580,46 @@ function drush_islandora_datastream_crud_generate_derivatives() {
         }
       }
     }
+  }
+}
+
+/**
+ * Generates RELS-INT datastream.
+ */
+function drush_islandora_datastream_crud_generate_rels_int() {
+  if (!module_exists('islandora_paged_content')) {
+    drush_set_error('PAGED_CONTENT_NOT_AVAILABLE',
+      dt('Sorry, Islandora Paged Content not enabled.'));
+  }
+
+  module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
+  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
+  if (!drush_confirm(dt("You are about to generate the RELS-INT datastream " .
+    "for !num object(s) in your repository. This action " .
+    "cannot be undone. Do you want to want to continue?",
+    array('!num' => count($pids), '!dsid' => $dsid)))) {
+    drush_user_abort(dt('Exiting, no datastreams generated.'));
+    exit;
+  }
+
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  if (!count($pids)) {
+    drush_set_error('NO_PIDS_IN_PID_FILE',
+    dt('The specified PID file (!pid_file) contains no PIDS.',
+      array('!pid_file' => $pid_file)));
+  }
+  foreach ($pids as $pid) {
+    // Load the object.
+    if (!$object = islandora_object_load($pid)) {
+      drush_set_error('IBD_OBJECT_NOT_FOUND',
+        dt('The specified object (!pid) does not exist or is not accessible.',
+          array('!pid' => $pid)));
+      continue;
+    }
+    // Generate RELS-INT.
+    drush_log(dt('Please be patient, generating the RELS-INT datastream for !pid',
+      array('!pid' => $pid)), 'ok');
+    islandora_paged_content_add_dimensions_relationships($object, TRUE);
   }
 }
 
