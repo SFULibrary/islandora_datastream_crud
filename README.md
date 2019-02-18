@@ -170,9 +170,27 @@ Lines in the PID file beginning with `#` or `//` are ignored.
 
 `islandora_datastream_crud_fetch_datastreams` will write the content of the fetched datastreams into the location specified in `--datastreams_directory` with filenames containing the object's PID and the datastream ID in the form `namespace_restofthepid_dsid.ext`. The colon in the PID is replaced with an underscore, and the datastream ID is separated from the PID with another underscore. For example, the MODS datastream from object islandora:11 would be saved as `islandora_11_MODS.xml`.
 
+
 If `--datastreams_extension` is present, filenames are given its value as their extension. If it is absent, Islandora will assign an extension based on the datastream's MIME type.
 
 As mentioned above, datastream files do not need to be created using `islandora_datastream_crud_fetch_datastreams`. Any files conforming to the expected filenaming pattern will replace existing datastream content using the `islandora_datastream_crud_push_datastreams` command.
+
+### Dealing with underscores in PID or datastream IDs
+
+As described in the previous section, Islandora Datastream CRUD uses underscores (`_`) to in filenames to separate the two parts of each object's PID and the datastream ID from each other. If your PIDs contain underscores, or your datastream IDs contain underscores, you should use the `--filename_separator` option with `islandora_datastream_crud_fetch_datastreams` and `islandora_datastream_crud_push_datastreams` so that your PIDs and DSIDs are unambiguously added to/parsed from their filenames. Any character other than `_` can be used with this option. For example:
+
+* `drush islandora_datastream_crud_fetch_datastreams --user=admin --pid_file=/tmp/imagepids.txt --dsid=MODS --datastreams_directory=/tmp/imagemods --filename_separator=^`
+* `drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagemods_modified --filename_separator=^`
+
+If you use this option, the PID in each filename will contain the standard colon (`:`) and the character specified will be used to separate the PID from the datastream ID. For example, `--filename_separator=^` will produce datastream filenames such as
+
+```
+islandora:1^MODS.xml
+islandora:2^MODS.xml
+islandora:3^MODS.xml
+```
+
+PIDs containing underscores, such as `my_namespace:200` and datastream IDs containing underscores, such as `MY_CUSTOM_DS`, will be preserved, e.g. `my_namespace:200^MY_CUSTOM_DS.txt`.
 
 ## Effects of pushing datastreams
 

@@ -48,6 +48,7 @@ function islandora_datastream_crud_query_solr($query) {
  *   TRUE on successful saving of the content, FALSE otherwise.
  */
 function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
+  $filename_separator = drush_get_option('filename_separator', '_');
   if (!islandora_object_load($pid)) {
     drush_set_error('OBJECT_DOES_NOT_EXIST',
       dt('The specified object (!pid) does not exist or is not accessible.',
@@ -56,7 +57,13 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
   }
   else {
     $object = islandora_object_load($pid);
-    $normalized_pid = preg_replace('/:/', '_', $pid);
+    $normalized_pid = $pid;
+    if ($filename_separator == '_') {
+      $normalized_pid = preg_replace('/:/', '_', $pid);
+    }
+    else {
+      $normalized_pid = $pid;
+    }
     if ($object[$dsid]) {
       $ds = $object[$dsid];
       // If no datastream version number is specified, Tuque gives us
@@ -79,7 +86,7 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
         module_load_include('inc', 'islandora', 'includes/mimetype.utils');
         $extension = islandora_get_extension_for_mimetype($ds->mimetype);
       }
-      $ds_filename = $normalized_pid . '_' . $dsid . '.' . $extension;
+      $ds_filename = $normalized_pid . $filename_separator . $dsid . '.' . $extension;
       // If a version was specified, we need to record some information about
       // the version that was retrieved in case we want to revert to that
       // version later.
@@ -111,6 +118,7 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
  *   The PID of the object the datastream was added to, FALSE otherwise.
  */
 function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FALSE) {
+  list($pid, $dsid) = islandora_datastream_crud_parse_dsfilename($ds_path);
   if (drush_get_option('datastreams_revert')) {
     $version_data_path = drush_get_option('datastreams_source_directory') .
       DIRECTORY_SEPARATOR . 'version_data.log';
@@ -122,10 +130,8 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
     }
   }
   $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
-  // Get the datastream ID from the end of the filename.
-  list($namespace, $number, $dsid) = explode('_', $ds_filename);
 
-  if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_path)) {
+  if (!$pid) {
     return FALSE;
   }
   module_load_include('inc', 'islandora', 'includes/utilities');
@@ -457,24 +463,31 @@ function islandora_datastream_crud_read_pid_file($pid_file_path) {
 }
 
 /**
- * Converts a datastream filename to a PID.
+ * Converts a datastream filename to a PID/DSID pair.
  *
  * @param string $filepath
  *   The datastream filepath.
  *
- * @return string
- *   The corresponding PID.
+ * @return array|bool
+ *   The corresponding PID and DSID or FALSE.
  */
-function islandora_datastream_crud_dsfilename_to_pid($filepath) {
+function islandora_datastream_crud_parse_dsfilename($filepath) {
+  $filename_separator = drush_get_option('filename_separator', '_');
   $filename = pathinfo($filepath, PATHINFO_FILENAME);
+  if (!strstr($filename, $filename_separator)) {
+    drush_log(dt("Filename !filename does not contain the separator !separator",
+      array('!filename' => $filename, '!separator' => $filename_separator)), 'warning');
+    return FALSE;
+  }
+
   $filenames_to_skip = array(
     'version_data',
   );
   if (in_array($filename, $filenames_to_skip)) {
     return FALSE;
   }
-  list($namespace, $restofthepid, $dsid) = explode('_', $filename);
-  return $namespace . ':' . $restofthepid;
+  list($pid, $dsid) = explode($filename_separator, $filename);
+  return array($pid, $dsid);
 }
 
 /**

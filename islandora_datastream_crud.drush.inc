@@ -74,6 +74,9 @@ function islandora_datastream_crud_drush_command() {
       'pause' => array(
         'description' => 'Optional. Number of seconds to pause before fetching the next datastream.',
       ),
+      'filename_separator' => array(
+        'description' => 'Optional. Single character used to separate the PID namespace, PID number, and datastream ID in datastream filenames. Defaults to _.',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -123,6 +126,9 @@ function islandora_datastream_crud_drush_command() {
       'no_derivs' => array(
         'description' => 'Optional. Turns off all derivative generation that would otherwise result from pushing datastreams.',
         'value' => 'optional',
+      ),
+      'filename_separator' => array(
+        'description' => 'Optional. Single character used to separate the PID namespace, PID number, and datastream ID in datastream filenames. Defaults to _.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -353,7 +359,12 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
   $dsid = (drush_get_option('dsid'));
   $datastreams_directory = drush_get_option('datastreams_directory');
-  $pid_file = (drush_get_option('pid_file'));
+  $pid_file = drush_get_option('pid_file');
+  $filename_separator = drush_get_option('filename_separator', '_');
+  if ($filename_separator == ':') {
+      drush_user_abort(dt('Exiting, : is not allowed as the filename separator.'));
+      exit;
+  }
 
   if (file_exists($datastreams_directory)) {
     if (!drush_confirm(dt("Datastreams directory !dir already exists. Any " .
@@ -429,6 +440,11 @@ function drush_islandora_datastream_crud_push_datastreams() {
     dt('The specified datastream source directory (!dir) does not exist.',
       array('!dir' => $source_directory)));
   }
+  $filename_separator = drush_get_option('filename_separator', '_');
+  if ($filename_separator == ':') {
+      drush_user_abort(dt('Exiting, : is not allowed as the filename separator.'));
+      exit;
+  }
 
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
   // If --pid_file was specified, only push to objects that have a PID there.
@@ -448,9 +464,8 @@ function drush_islandora_datastream_crud_push_datastreams() {
   $xml_files = array_slice(array_filter(glob($source_directory .
     DIRECTORY_SEPARATOR . '*.xml'), 'is_file'), 0, 1);
   if (count($xml_files) === 1) {
-    // Note: https://github.com/mjordan/islandora_datastream_crud/issues/33
-    // may make separator not be an _.
-    list($namespace, $restofthepid, $dsid) = explode('_', pathinfo($xml_files[0], PATHINFO_FILENAME));
+    list($pid, $dsid) = islandora_datastream_crud_parse_dsfilename($xml_files[0]);
+    // list($namespace, $restofthepid, $dsid) = explode($filename_separator, pathinfo($xml_files[0], PATHINFO_FILENAME));
 
     if (drush_get_option('update_dc', 1)) {
       if (drush_confirm(dt("Do you want to update each object's DC datastream using the new !dsid?",
@@ -465,7 +480,10 @@ function drush_islandora_datastream_crud_push_datastreams() {
       sleep(drush_get_option('pause'));
     }
     if (drush_get_option('pid_file')) {
-      if ($pid = islandora_datastream_crud_dsfilename_to_pid($filepath)) {
+      list($pid, $dsid) = islandora_datastream_crud_parse_dsfilename($filepath);
+      var_dump($pid);
+      var_dump($dsid);
+      if ($pid) {
         if (in_array($pid, $pids)) {
           islandora_datastream_crud_push_datastream($filepath, $regenerate_dc);
         }
