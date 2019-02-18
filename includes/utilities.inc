@@ -474,11 +474,6 @@ function islandora_datastream_crud_read_pid_file($pid_file_path) {
 function islandora_datastream_crud_parse_dsfilename($filepath) {
   $filename_separator = drush_get_option('filename_separator', '_');
   $filename = pathinfo($filepath, PATHINFO_FILENAME);
-  if (!strstr($filename, $filename_separator)) {
-    drush_log(dt("Filename !filename does not contain the separator !separator",
-      array('!filename' => $filename, '!separator' => $filename_separator)), 'warning');
-    return FALSE;
-  }
 
   $filenames_to_skip = array(
     'version_data',
