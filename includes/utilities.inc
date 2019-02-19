@@ -481,8 +481,16 @@ function islandora_datastream_crud_parse_dsfilename($filepath) {
   if (in_array($filename, $filenames_to_skip)) {
     return FALSE;
   }
-  list($pid, $dsid) = explode($filename_separator, $filename);
-  return array($pid, $dsid);
+
+  // The default case is namesapce_number_DSID.
+  if (substr_count($filename, '_') == 2) {
+    list($namespace, $number, $dsid) = explode('_', $filename);
+    return array($namespace . ':' . $number, $dsid);
+  }
+  else {
+    list($pid, $dsid) = explode($filename_separator, $filename);
+    return array($pid, $dsid);
+  }
 }
 
 /**
