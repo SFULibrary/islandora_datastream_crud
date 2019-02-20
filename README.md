@@ -44,7 +44,7 @@ The general workflow when using this module is:
 1. Fetch some PIDs from Islandora.
 2. Fetch a specific datastream from each of the objects identified by your PIDs (this saves the datastream content in a set of files, one per datasteram).
 3. Update or modify the fetched datastream files.
-4. Ensure that the modified datastream files are what you want to push to your repository. This module provides a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams, but that should not prevent you from performing quality control before you push`.
+4. Ensure that the modified datastream files are what you want to push to your repository. This module provides a way to roll back or revert changes made as a result of issuing `islandora_datastream_crud_push_datastreams`, but that should not prevent you from performing quality control before you push.
 5. Push the updated datasteam files back to the objects they belong to.
 
 Steps 1, 2, and 5 involve running the appropriate drush command. Steps 3 and 4 deserve special explantion.
