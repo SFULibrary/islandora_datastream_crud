@@ -361,9 +361,9 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
   $datastreams_directory = drush_get_option('datastreams_directory');
   $pid_file = drush_get_option('pid_file');
   $filename_separator = drush_get_option('filename_separator', '_');
-  $prohibited_filename_separators = array('/', ':');
+  $prohibited_filename_separators = array('/', '*', ':');
   if (in_array($filename_separator, $prohibited_filename_separators)) {
-      drush_user_abort(dt('Exiting, ":" and "/" are not allowed as the filename separator.'));
+      drush_user_abort(dt('Exiting, ":", "*", and "/" are not allowed as the filename separator.'));
       exit;
   }
 
@@ -442,9 +442,9 @@ function drush_islandora_datastream_crud_push_datastreams() {
       array('!dir' => $source_directory)));
   }
   $filename_separator = drush_get_option('filename_separator', '_');
-  $prohibited_filename_separators = array('/', ':');
+  $prohibited_filename_separators = array('/', '*', ':');
   if (in_array($filename_separator, $prohibited_filename_separators)) {
-      drush_user_abort(dt('Exiting, ":" and "/" are not allowed as the filename separator.'));
+      drush_user_abort(dt('Exiting, ":", "*", and "/" are not allowed as the filename separator.'));
       exit;
   }
 

@@ -179,7 +179,7 @@ As mentioned above, datastream files do not need to be created using `islandora_
 
 As described in the previous section, by default Islandora Datastream CRUD uses underscores (`_`) in filenames to separate the two parts of each object's PID and the datastream ID from each other. This causes problems if your PIDs or your datastream IDs contain underscores.
 
-If your PIDs contain underscores, or your datastream IDs contain underscores, you should use the `--filename_separator` option with `islandora_datastream_crud_fetch_datastreams` and `islandora_datastream_crud_push_datastreams` so that your PIDs and DSIDs are unambiguously added to (in the case of fetching datastreams) or parsed from (in the case of pushing datastreams) their filenames. Any character other than `:` and `/` can be used with this option. For example:
+If your PIDs contain underscores, or your datastream IDs contain underscores, you should use the `--filename_separator` option with `islandora_datastream_crud_fetch_datastreams` and `islandora_datastream_crud_push_datastreams` so that your PIDs and DSIDs are unambiguously added to (in the case of fetching datastreams) or parsed from (in the case of pushing datastreams) their filenames. Any character other than `:`, `*`, and `/` can be used with this option. For example:
 
 * `drush islandora_datastream_crud_fetch_datastreams --user=admin --pid_file=/tmp/imagepids.txt --dsid=MODS --datastreams_directory=/tmp/imagemods --filename_separator=^`
 * `drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagemods_modified --filename_separator=^`
