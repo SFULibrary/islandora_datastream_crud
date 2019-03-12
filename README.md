@@ -211,10 +211,7 @@ In general, the behaviors described here are the same regardless of whether the 
 
 ## Modifying object properties
 
-Even though this module is called Islandora *Datastream* CRUD, it can also modify object properties. It can do this in two ways:
-
-* One of `islandora_datastream_crud_push_datastreams`'s options, `--update_object_label`, will modify the parent object's label. This option only applies when you are pushing DC datastreams; it updates the object's label using the value in the DC title element. This option will likely be deprecated in the future in favor of the `islandora_datastream_crud_update_object_properties` command.
-* Via the `islandora_datastream_crud_update_object_properties` command, which can take the following options:
+Even though this module is called Islandora *Datastream* CRUD, it can also modify object properties. It can do this via the `islandora_datastream_crud_update_object_properties` command, which can take the following options:
   * `--pid_file`: Required. Absolute path to the file that lists PIDs for objects whose properties you want to update.
   * `--owner`: Optional. The owner you want to assign to objects identified in `--pid_file`.
   * `--state`: Optional. The state you want to assign to objects identified in `--pid_file`. Must be one of A (for 'active'), I (for 'inactive'), or D for 'deleted').

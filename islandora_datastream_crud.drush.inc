@@ -113,10 +113,6 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. Include if the push is to revert datastream versions.',
         'value' => 'optional',
       ),
-      'update_object_label' => array(
-        'description' => 'Optional. Include if the push of DC datastream is to update each object\'s label derived from DC title element. Will be deprecated at end of 2017 as described in issue 38.',
-        'value' => 'optional',
-      ),
       'update_dc' => array(
         'description' => 'Optional. Set to 0 (zero) if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is 1, but you will be prompted to confirm the DC update.',
       ),
