@@ -82,7 +82,7 @@ function islandora_datastream_crud_drush_command() {
   );
   $items['islandora_datastream_crud_push_datastreams'] = array(
     'aliases' => array('idcrudpd'),
-    'description' => 'Add or replace datastrems. This operation writes datastreams to objects in your repository.',
+    'description' => 'Add or replace datastreams. This operation writes datastreams to objects in your repository.',
     'examples' => array(
       'drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagecollection_objs',
       'drush islandora_datastream_crud_push_datastreams --user=admin --no_derivs --datastreams_source_directory=/tmp/imagecollection_objs',
