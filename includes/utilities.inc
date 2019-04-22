@@ -292,9 +292,10 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
   if (drush_get_option('update_object_label')) {
     $dsid = drush_get_option('source_dsid', 'MODS');
     $xpath_exp = drush_get_option('source_xpath', '//mods:titleInfo/mods:title');
+    $additional_namespace = drush_get_option('add_namespace', '');
 
     $ds_xml = $object[$dsid]->content;
-    if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $ds_xml)) {
+    if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $ds_xml, $additional_namespace)) {
       if ($object->label != $label) {
         $object->label = $label;
         drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
@@ -324,13 +325,19 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
  * @return string|FALSE
  *   The string value of result from the XPath, or FALSE.
  */
-function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
+function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml, $additional_namespace = '') {
   $concat_string = drush_get_option('concat_string', ' ');
   $dom = new DOMDocument();
   $dom->loadXML($xml);
   $xpath = new DOMXPath($dom);
 
   $namespaces = islandora_datastream_crud_get_namespaces($xml);
+
+  if (strlen($additional_namespace)) {
+    list($additional_prefix, $additional_uri) = explode(':', $additional_namespace, 2);
+    $namespaces[trim($additional_prefix)] = trim($additional_uri);
+  }
+
   foreach ($namespaces as $namespace_prefix => $namespace_uri) {
     $xpath->registerNamespace($namespace_prefix, $namespace_uri);
   }
