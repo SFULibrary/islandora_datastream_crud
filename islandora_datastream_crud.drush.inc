@@ -213,6 +213,9 @@ function islandora_datastream_crud_drush_command() {
       'source_xpath' => array(
         'description' => "Xpath expression that tells the 'update_object_label' option where to find the label value. Must be wrapped in double quotation marks.",
       ),
+      'add_namespace' => array(
+        'description' => "Additional namespaceprefix:namespaceuri pair to register in the XPath used to get the object label.",
+      ),
       'concat_string' => array(
         'description' => "String used to join repeated values retrieved by --source_xpath. Default is a single space.",
       ),
