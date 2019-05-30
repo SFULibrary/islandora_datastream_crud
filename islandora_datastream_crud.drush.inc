@@ -573,12 +573,22 @@ function drush_islandora_datastream_crud_generate_derivatives() {
     foreach ($messages as $message) {
       if ($message['success']) {
         foreach ($message['messages'] as $ds_message) {
-          drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
+          if (isset($ds_message) && array_key_exists('message', $ds_message) && array_key_exists('message_sub', $ds_message)) {
+            drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
+          }
+          else {
+            drush_log(dt("Derivative generated, but no further information is available."), 'ok');
+          }
         }
       }
       else {
         foreach ($message['messages'] as $ds_message) {
-          drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], $ds_message['message_sub'])));
+          if (isset($ds_message) && array_key_exists('message', $ds_message) && array_key_exists('message_sub', $ds_message)) {
+            drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], $ds_message['message_sub'])));
+          }
+          else {
+            drush_set_error('DERIVATIVE_NOT_GENERATED', dt("Derivative not generated, no further information is available."));
+          }
         }
       }
     }
