@@ -573,7 +573,7 @@ function drush_islandora_datastream_crud_generate_derivatives() {
     foreach ($messages as $message) {
       if ($message['success']) {
         foreach ($message['messages'] as $ds_message) {
-          if (isset($ds_message) && array_key_exists('message', $ds_message) && array_key_exists('message_sub', $ds_message)) {
+          if (isset($ds_message) && (array_key_exists('message', $ds_message) || array_key_exists('message_sub', $ds_message))) {
             drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
           }
           else {
@@ -583,7 +583,7 @@ function drush_islandora_datastream_crud_generate_derivatives() {
       }
       else {
         foreach ($message['messages'] as $ds_message) {
-          if (isset($ds_message) && array_key_exists('message', $ds_message) && array_key_exists('message_sub', $ds_message)) {
+          if (isset($ds_message) && (array_key_exists('message', $ds_message) || array_key_exists('message_sub', $ds_message))) {
             drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], $ds_message['message_sub'])));
           }
           else {
