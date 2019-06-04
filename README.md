@@ -89,6 +89,8 @@ the following command would add three datastreams (DS1, DS2, and DS3, all with a
 
 Another subset of the general workflow in which you do not fetch datastreams is to delete a datastream from a set of objects. To do this, you only need to specify the objects you want to delete the datastream from in the PID file, and the datastream ID you want to delete.
 
+Optionally, you can also specify datastream version numbers to be deleted, either as a list of version numbers, or as a range of version numbers. This can be helpful, for example, if you want to delete all but the current version (0) of a datastream on many objects.
+
 Note that you cannot delete the DC datastream. Fedora Commons requires that each object has a DC datastream.
 
 ### Exporting datastreams
