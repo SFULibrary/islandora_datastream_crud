@@ -21,6 +21,9 @@ function islandora_datastream_crud_drush_command() {
       'content_model' => array(
         'description' => 'The content model of the objects you want to update.',
       ),
+      'without_cmodel' => array(
+         'description' => 'The content model you want to exclude from your list of objects.',
+      ),
       'namespace' => array(
         'description' => 'The namespace of the objects you want to update.',
       ),
@@ -280,7 +283,9 @@ function drush_islandora_datastream_crud_fetch_pids() {
   if (drush_get_option('content_model')) {
     $query_parts[] = 'RELS_EXT_hasModel_uri_t' . ':' . '"info:fedora/' . drush_get_option('content_model') . '"';
   }
-
+  if (drush_get_option('without_cmodel')) {
+    $query_parts[] = '-RELS_EXT_hasModel_uri_t' . ':' . '"info:fedora/' . drush_get_option('without_cmodel') . '"';
+  }
   if (count($query_parts) > 1) {
     $query = implode(' AND ', $query_parts);
   }
