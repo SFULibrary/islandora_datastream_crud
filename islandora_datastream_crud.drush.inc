@@ -578,12 +578,12 @@ function drush_islandora_datastream_crud_generate_derivatives() {
     foreach ($messages as $message) {
       if ($message['success']) {
         foreach ($message['messages'] as $ds_message) {
-          drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
+          drush_log(strip_tags(dt($ds_message['message'], (array) $ds_message['message_sub'])), 'ok');
         }
       }
       else {
         foreach ($message['messages'] as $ds_message) {
-          drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], $ds_message['message_sub'])));
+          drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], (array) $ds_message['message_sub'])));
         }
       }
     }
