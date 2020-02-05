@@ -98,6 +98,8 @@ If you want to export a set of datastreams from our repository, the `islandora_d
 
 ### Triggering derivative generation
 
+> Before running the command described in this section, `islandora_datastream_crud_generate_derivatives`, with either the `--dest_dsids` or `--skip_dsids` options, you should enable "Defer derivative generation during ingest" option in your site's Islandora > Configuration menu. Doing this will ensure that additional datastreams are not generated unintentionally.
+
 This module offers a command, `islandora_datastream_crud_generate_derivatives`, that will generate all the derivatives from the specified source datastream ID. For example, to generate or regenerate all the derivatives based on the OBJ datastream, you would issue the following command:
 
 `drush islandora_datastream_crud_generate_derivatives --user=admin --source_dsid=OBJ --pid_file=/tmp/regenerate_derivatives_for_these_objects.txt`
@@ -111,7 +113,7 @@ Note that this command does not download datastream files from your repository; 
 
 The former restricts the generated derivatives to a comma-separated list of DSIDs, and the latter generates all derivatives other than the ones specified in a comma-separated list. The two options are meant to be mutually exclusive and should not be used together.
 
-You can also trigger derivative generation/regeneration on objects if you push OBJ datastreams up. A plausible scenario where you may want to do this is if a batch ingest fails during the derivative generation phase. By fetching a list of PIDs using the `--without_dsid` option with the ID of a derivative datastream, you can then fetch those objects' OBJ datastreams and push them back up. Not the most efficient way to trigger datastream generation. You should use this option if you want to replace the source datastream; use `islandora_datastream_crud_generate_derivatives` if just want to regenerate derivatives from an existing source datastream. 
+You can also trigger derivative generation/regeneration on objects if you push OBJ datastreams up. A plausible scenario where you may want to do this is if a batch ingest fails during the derivative generation phase. By fetching a list of PIDs using the `--without_dsid` option with the ID of a derivative datastream, you can then fetch those objects' OBJ datastreams and push them back up. Not the most efficient way to trigger datastream generation. You should use this option if you want to replace the source datastream; use `islandora_datastream_crud_generate_derivatives` if just want to regenerate derivatives from an existing source datastream. Note that if you use this technique, you should disable (the normal state) "Defer derivative generation during ingest" option in your site's Islandora > Configuration menu.
 
 ### Updating DC datastreams by pushing other XML datastreams
 
