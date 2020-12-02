@@ -48,6 +48,7 @@ function islandora_datastream_crud_query_solr($query) {
  *   TRUE on successful saving of the content, FALSE otherwise.
  */
 function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
+  $filename_separator = drush_get_option('filename_separator', '_');
   if (!islandora_object_load($pid)) {
     drush_set_error('OBJECT_DOES_NOT_EXIST',
       dt('The specified object (!pid) does not exist or is not accessible.',
@@ -56,7 +57,13 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
   }
   else {
     $object = islandora_object_load($pid);
-    $normalized_pid = preg_replace('/:/', '_', $pid);
+    $normalized_pid = $pid;
+    if ($filename_separator == '_') {
+      $normalized_pid = preg_replace('/:/', '_', $pid);
+    }
+    else {
+      $normalized_pid = $pid;
+    }
     if ($object[$dsid]) {
       $ds = $object[$dsid];
       // If no datastream version number is specified, Tuque gives us
@@ -79,7 +86,7 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
         module_load_include('inc', 'islandora', 'includes/mimetype.utils');
         $extension = islandora_get_extension_for_mimetype($ds->mimetype);
       }
-      $ds_filename = $normalized_pid . '_' . $dsid . '.' . $extension;
+      $ds_filename = $normalized_pid . $filename_separator . $dsid . '.' . $extension;
       // If a version was specified, we need to record some information about
       // the version that was retrieved in case we want to revert to that
       // version later.
@@ -111,6 +118,7 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
  *   The PID of the object the datastream was added to, FALSE otherwise.
  */
 function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FALSE) {
+  list($pid, $dsid) = islandora_datastream_crud_parse_dsfilename($ds_path);
   if (drush_get_option('datastreams_revert')) {
     $version_data_path = drush_get_option('datastreams_source_directory') .
       DIRECTORY_SEPARATOR . 'version_data.log';
@@ -122,9 +130,8 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
     }
   }
   $ds_filename = pathinfo($ds_path, PATHINFO_FILENAME);
-  // Get the datastream ID from the end of the filename.
-  list($namespace, $number, $dsid) = explode('_', $ds_filename);
-  if (!$pid = islandora_datastream_crud_dsfilename_to_pid($ds_path)) {
+
+  if (!$pid) {
     return FALSE;
   }
   module_load_include('inc', 'islandora', 'includes/utilities');
@@ -145,6 +152,12 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
   }
   else {
     $object = islandora_object_load($pid);
+    if (isset($object[$dsid])) {
+      $object_had_ds = TRUE;
+    }
+    else {
+      $object_had_ds = FALSE;
+    }
     if (drush_get_option('datastreams_revert')) {
       $version_data = islandora_datastream_crud_read_version_data_log($version_data_path);
     }
@@ -161,22 +174,13 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
       $ds->mimeType = $version_data[$ds_filename]['mimetype'];
       $ds->label = $version_data[$ds_filename]['label'];
     }
-    // Update object label from DC if specified.
-    if ((drush_get_option('update_object_label')) AND ($dsid == 'DC')) {
-      $dublincore = file_get_contents($ds_path);
-      $dc_xml = new SimpleXmlElement($dublincore);
-      $namespaces = $dc_xml->getNameSpaces(TRUE);
-      $dc = $dc_xml->children($namespaces['dc']);
-      $new_title = $dc->title;
-      if ($new_title != $object->label) {
-        $old_title = $object->label;
-        $object->label = $new_title;
-        islandora_datastream_crud_write_crudlog($pid, $dsid, 'Object label updated from "' . $old_title . '" to "' . $new_title . '"');
-      }
-    }
 
     try {
-      $object->ingestDatastream($ds);
+      // We only need to ingestDatastream() if it doesn't already exist.
+      // setContentFromFile() updates the datastream content if it does exist.
+      if (!$object_had_ds) {
+        $object->ingestDatastream($ds);
+      }
       drush_log(dt("!dsid datastream pushed to object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
       islandora_datastream_crud_write_crudlog($pid, $dsid, 'pushed');
       if ($regenerate_dc) {
@@ -288,9 +292,10 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
   if (drush_get_option('update_object_label')) {
     $dsid = drush_get_option('source_dsid', 'MODS');
     $xpath_exp = drush_get_option('source_xpath', '//mods:titleInfo/mods:title');
+    $additional_namespace = drush_get_option('add_namespace', '');
 
     $ds_xml = $object[$dsid]->content;
-    if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $ds_xml)) {
+    if ($label = islandora_datastream_crud_get_label_from_xml($xpath_exp, $ds_xml, $additional_namespace)) {
       if ($object->label != $label) {
         $object->label = $label;
         drush_log(dt("Label for object !pid updated to !label", array('!pid' => $object->id, '!label' => $label)), 'ok');
@@ -320,13 +325,19 @@ function islandora_datastream_crud_update_object_properties($object, $props) {
  * @return string|FALSE
  *   The string value of result from the XPath, or FALSE.
  */
-function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml) {
+function islandora_datastream_crud_get_label_from_xml($xpath_exp, $xml, $additional_namespace = '') {
   $concat_string = drush_get_option('concat_string', ' ');
   $dom = new DOMDocument();
   $dom->loadXML($xml);
   $xpath = new DOMXPath($dom);
 
   $namespaces = islandora_datastream_crud_get_namespaces($xml);
+
+  if (strlen($additional_namespace)) {
+    list($additional_prefix, $additional_uri) = explode(':', $additional_namespace, 2);
+    $namespaces[trim($additional_prefix)] = trim($additional_uri);
+  }
+
   foreach ($namespaces as $namespace_prefix => $namespace_uri) {
     $xpath->registerNamespace($namespace_prefix, $namespace_uri);
   }
@@ -446,24 +457,34 @@ function islandora_datastream_crud_read_pid_file($pid_file_path) {
 }
 
 /**
- * Converts a datastream filename to a PID.
+ * Converts a datastream filename to a PID/DSID pair.
  *
  * @param string $filepath
  *   The datastream filepath.
  *
- * @return string
- *   The corresponding PID.
+ * @return array|bool
+ *   The corresponding PID and DSID or FALSE.
  */
-function islandora_datastream_crud_dsfilename_to_pid($filepath) {
+function islandora_datastream_crud_parse_dsfilename($filepath) {
+  $filename_separator = drush_get_option('filename_separator', '_');
   $filename = pathinfo($filepath, PATHINFO_FILENAME);
+
   $filenames_to_skip = array(
     'version_data',
   );
   if (in_array($filename, $filenames_to_skip)) {
     return FALSE;
   }
-  list($namespace, $restofthepid, $dsid) = explode('_', $filename);
-  return $namespace . ':' . $restofthepid;
+
+  // The default case is namesapce_number_DSID.
+  if (substr_count($filename, '_') == 2) {
+    list($namespace, $number, $dsid) = explode('_', $filename);
+    return array($namespace . ':' . $number, $dsid);
+  }
+  else {
+    list($pid, $dsid) = explode($filename_separator, $filename);
+    return array($pid, $dsid);
+  }
 }
 
 /**

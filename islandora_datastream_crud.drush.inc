@@ -21,11 +21,17 @@ function islandora_datastream_crud_drush_command() {
       'content_model' => array(
         'description' => 'The content model of the objects you want to update.',
       ),
+      'without_cmodel' => array(
+         'description' => 'The content model you want to exclude from your list of objects.',
+      ),
       'namespace' => array(
         'description' => 'The namespace of the objects you want to update.',
       ),
       'collection' => array(
         'description' => 'The PID of the collection from which to select the objects.',
+      ),
+      'is_member_of' => array(
+        'description' => 'The PID of the parent with the isMemberOf relationship.',
       ),
       'with_dsid' => array(
         'description' => 'Limit to objects that have a datastream with the specified datastream ID.',
@@ -71,14 +77,18 @@ function islandora_datastream_crud_drush_command() {
       'pause' => array(
         'description' => 'Optional. Number of seconds to pause before fetching the next datastream.',
       ),
+      'filename_separator' => array(
+        'description' => 'Optional. Single character used to separate the PID namespace, PID number, and datastream ID in datastream filenames. Defaults to _.',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
   $items['islandora_datastream_crud_push_datastreams'] = array(
     'aliases' => array('idcrudpd'),
-    'description' => 'Add or replace datastrems. This operation writes datastreams to objects in your repository.',
+    'description' => 'Add or replace datastreams. This operation writes datastreams to objects in your repository.',
     'examples' => array(
       'drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagecollection_objs',
+      'drush islandora_datastream_crud_push_datastreams --user=admin --no_derivs --datastreams_source_directory=/tmp/imagecollection_objs',
       'drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=/tmp/imagecollection_objs --pid_file=/tmp/wanted_pids.txt',
       'drush islandora_datastream_crud_push_datastreams --user=admin --datastreams_directory=/tmp/my_new_datastreams --pid_file=/tmp/pids_for_target_objects.txt --datastream_label="My new datastream" --datastream_mimetype=application/foo',
     ),
@@ -106,15 +116,18 @@ function islandora_datastream_crud_drush_command() {
         'description' => 'Optional. Include if the push is to revert datastream versions.',
         'value' => 'optional',
       ),
-      'update_object_label' => array(
-        'description' => 'Optional. Include if the push of DC datastream is to update each object\'s label derived from DC title element. Will be deprecated at end of 2017 as described in issue 38.',
-        'value' => 'optional',
-      ),
       'update_dc' => array(
         'description' => 'Optional. Set to 0 (zero) if you do not want to update your DC datastreams from the MODS or other XML datastreams ou are pushing. Default is 1, but you will be prompted to confirm the DC update.',
       ),
       'dc_transform' => array(
         'description' => 'Optional. Absolute path to the XSLT stylesheet to use for regenerating DC from MODS or other XML datastream.',
+      ),
+      'no_derivs' => array(
+        'description' => 'Optional. Turns off all derivative generation that would otherwise result from pushing datastreams.',
+        'value' => 'optional',
+      ),
+      'filename_separator' => array(
+        'description' => 'Optional. Single character used to separate the PID namespace, PID number, and datastream ID in datastream filenames. Defaults to _.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -149,11 +162,11 @@ function islandora_datastream_crud_drush_command() {
     'aliases' => array('idcrudgd'),
     'description' => 'Generate or regenerate derivative datastreams from a source DSID.',
     'examples' => array(
-      'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --pid_file=/tmp/delete_foo_from_these_objects.txt',
+      'drush islandora_datastream_crud_generate_derivatives --user=admin --source_dsid=OBJ --pid_file=/tmp/regenerate_derivatives_for_these_objects.txt',
     ),
     'options' => array(
       'pid_file' => array(
-        'description' => 'Absolute path to the file that lists PIDs for objects you want to delete datastreams from.',
+        'description' => 'Absolute path to the file that lists PIDs for objects you want to generate derivatives for.',
         'required' => TRUE,
       ),
       'source_dsid' => array(
@@ -203,6 +216,9 @@ function islandora_datastream_crud_drush_command() {
       'source_xpath' => array(
         'description' => "Xpath expression that tells the 'update_object_label' option where to find the label value. Must be wrapped in double quotation marks.",
       ),
+      'add_namespace' => array(
+        'description' => "Additional namespaceprefix:namespaceuri pair to register in the XPath used to get the object label.",
+      ),
       'concat_string' => array(
         'description' => "String used to join repeated values retrieved by --source_xpath. Default is a single space.",
       ),
@@ -223,6 +239,16 @@ function drush_islandora_datastream_crud_fetch_pids() {
   if (!module_exists('islandora_solr')) {
     drush_set_error('SOLR_SEARCH_NOT_AVAILABLE',
       dt('Sorry, Islandora Solr Search not enabled.'));
+  }
+
+  // If applicable, check that the specified parent object exists and
+  // is accessible; if it's not, exit with an error.
+  if (drush_get_option('is_member_of')) {
+    if (!islandora_object_load(drush_get_option('is_member_of'))) {
+      drush_set_error('PARENT_NOT_FOUND',
+        dt('The specified parent object (!is_member_of) is not found or is not accessible.',
+        array('!is_member_of' => drush_get_option('is_member_of'))));
+    }
   }
 
   // If applicable, check that the specified collection object exists and
@@ -248,13 +274,18 @@ function drush_islandora_datastream_crud_fetch_pids() {
   // Build the Solr query.
   $query = '';
   $query_parts = array();
+  if (drush_get_option('is_member_of')) {
+    $query_parts[] = 'RELS_EXT_isMemberOf_uri_t' . ':"' . drush_get_option('is_member_of') . '"';
+  }
   if (drush_get_option('collection')) {
     $query_parts[] = 'RELS_EXT_isMemberOfCollection_uri_t' . ':"' . drush_get_option('collection') . '"';
   }
   if (drush_get_option('content_model')) {
     $query_parts[] = 'RELS_EXT_hasModel_uri_t' . ':' . '"info:fedora/' . drush_get_option('content_model') . '"';
   }
-
+  if (drush_get_option('without_cmodel')) {
+    $query_parts[] = '-RELS_EXT_hasModel_uri_t' . ':' . '"info:fedora/' . drush_get_option('without_cmodel') . '"';
+  }
   if (count($query_parts) > 1) {
     $query = implode(' AND ', $query_parts);
   }
@@ -332,7 +363,13 @@ function drush_islandora_datastream_crud_fetch_datastreams() {
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
   $dsid = (drush_get_option('dsid'));
   $datastreams_directory = drush_get_option('datastreams_directory');
-  $pid_file = (drush_get_option('pid_file'));
+  $pid_file = drush_get_option('pid_file');
+  $filename_separator = drush_get_option('filename_separator', '_');
+  $prohibited_filename_separators = array('/', '*', ':');
+  if (in_array($filename_separator, $prohibited_filename_separators)) {
+      drush_user_abort(dt('Exiting, ":", "*", and "/" are not allowed as the filename separator.'));
+      exit;
+  }
 
   if (file_exists($datastreams_directory)) {
     if (!drush_confirm(dt("Datastreams directory !dir already exists. Any " .
@@ -408,6 +445,12 @@ function drush_islandora_datastream_crud_push_datastreams() {
     dt('The specified datastream source directory (!dir) does not exist.',
       array('!dir' => $source_directory)));
   }
+  $filename_separator = drush_get_option('filename_separator', '_');
+  $prohibited_filename_separators = array('/', '*', ':');
+  if (in_array($filename_separator, $prohibited_filename_separators)) {
+      drush_user_abort(dt('Exiting, ":", "*", and "/" are not allowed as the filename separator.'));
+      exit;
+  }
 
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
   // If --pid_file was specified, only push to objects that have a PID there.
@@ -427,9 +470,8 @@ function drush_islandora_datastream_crud_push_datastreams() {
   $xml_files = array_slice(array_filter(glob($source_directory .
     DIRECTORY_SEPARATOR . '*.xml'), 'is_file'), 0, 1);
   if (count($xml_files) === 1) {
-    // Note: https://github.com/mjordan/islandora_datastream_crud/issues/33
-    // may make separator not be an _.
-    list($namespace, $restofthepid, $dsid) = explode('_', pathinfo($xml_files[0], PATHINFO_FILENAME));
+    list($pid, $dsid) = islandora_datastream_crud_parse_dsfilename($xml_files[0]);
+    // list($namespace, $restofthepid, $dsid) = explode($filename_separator, pathinfo($xml_files[0], PATHINFO_FILENAME));
 
     if (drush_get_option('update_dc', 1)) {
       if (drush_confirm(dt("Do you want to update each object's DC datastream using the new !dsid?",
@@ -440,11 +482,12 @@ function drush_islandora_datastream_crud_push_datastreams() {
   }
 
   foreach (glob("$source_directory/*") as $filepath) {
+    list($pid, $dsid) = islandora_datastream_crud_parse_dsfilename($filepath);
     if (drush_get_option('pause')) {
       sleep(drush_get_option('pause'));
     }
     if (drush_get_option('pid_file')) {
-      if ($pid = islandora_datastream_crud_dsfilename_to_pid($filepath)) {
+      if ($pid) {
         if (in_array($pid, $pids)) {
           islandora_datastream_crud_push_datastream($filepath, $regenerate_dc);
         }
@@ -535,12 +578,12 @@ function drush_islandora_datastream_crud_generate_derivatives() {
     foreach ($messages as $message) {
       if ($message['success']) {
         foreach ($message['messages'] as $ds_message) {
-          drush_log(strip_tags(dt($ds_message['message'], $ds_message['message_sub'])), 'ok');
+          drush_log(strip_tags(dt($ds_message['message'], (array) $ds_message['message_sub'])), 'ok');
         }
       }
       else {
         foreach ($message['messages'] as $ds_message) {
-          drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], $ds_message['message_sub'])));
+          drush_set_error('DERIVATIVE_NOT_GENERATED', strip_tags(dt($ds_message['message'], (array) $ds_message['message_sub'])));
         }
       }
     }
@@ -614,6 +657,9 @@ function drush_islandora_datastream_crud_update_object_properties_validate() {
  * Implements hook_islandora_derivative_alter().
  */
 function islandora_datastream_crud_islandora_derivative_alter(&$derivatives, AbstractObject $object) {
+  if (drush_get_option('no_derivs', FALSE)) {
+    $derivatives = array();
+  }
   if (drush_get_option('dest_dsids', FALSE)) {
     $dsid_list = drush_get_option('dest_dsids');
     $dsid_list = rtrim($dsid_list, ',');
