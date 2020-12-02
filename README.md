@@ -241,6 +241,11 @@ Scripts that do the work of updating datastreams, especially for MODS datastream
 * The `--collection` option for `islandora_datastream_crud_fetch_pids` only retrieves immediate children of the specified collection. If this is a problem for you, and all of the objects in your collection use the same namespace, use the `--namespace` option to get your PIDs instead of the `--collection` option.
 * Does not work with datastreams in the (R)edirect and (E)xternal Referenced control groups - use cases are welcome.
 
+## Known Issues
+
+* In sites that use extensive caching (e.g. Cloudflare page rules), objects' Solr documents might not get updated with changes made by Islandora Datastream CRUD (e.g. generating derivatives will not update the `fedora_datastreams_ms` Solr field, which CRUD uses for its `fetch_pids` searches). This could lead to such problems as fetching PIDs using a `--without_dsid` parameter incorrectly fetching PIDs that actually have that DSID. 
+  * The only known solution to this problem is to disable page caching before using Islandora Datastream CRUD.
+
 ## License
 
 * [GPLv3](http://www.gnu.org/licenses/gpl-3.0.txt) (please review sections 15, 16, and 17 carefully before installing this module).
