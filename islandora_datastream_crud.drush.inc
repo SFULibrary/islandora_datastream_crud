@@ -522,7 +522,7 @@ function drush_islandora_datastream_crud_delete_datastreams() {
     exit;
   }
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
-  if($versions) {
+  if(!is_null($versions)) {
     $confirm = dt("You are about to delete (purge) versions !versions from the !dsid " .
       "datastream from a set of objects in your repository. This action " .
       "cannot be undone. Do you want to continue?",
