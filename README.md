@@ -100,6 +100,8 @@ To specify a datastream version, use the `--versions=` parameter with one of the
 * `5..1` deletes all versions between 1 and 5
 * `1,4,3` deletes those specific individual datastream versions
 
+Example: `drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=MODS --versions=1.. --pid_file=/tmp/ds_versions_delete.txt`
+
 Note that you cannot delete the DC datastream. Fedora Commons requires that each object has a DC datastream.
 
 ### Exporting datastreams
