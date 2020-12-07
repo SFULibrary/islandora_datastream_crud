@@ -90,6 +90,18 @@ the following command would add three datastreams (DS1, DS2, and DS3, all with a
 
 Another subset of the general workflow in which you do not fetch datastreams is to delete a datastream from a set of objects. To do this, you only need to specify the objects you want to delete the datastream from in the PID file, and the datastream ID you want to delete.
 
+Optionally, you can also specify datastream version numbers to be deleted, either as a list of version numbers, or as a range of version numbers. This can be helpful, for example, if you want to delete all but the current version (0) of a datastream on many objects.
+
+To specify a datastream version, use the `--versions=` parameter with one of the following values:
+
+* `0` deletes version 0 (the current version of the datastream)
+* `1` deletes version 1 (the second-newest version)
+* `1..` deletes all versions from 1 and older
+* `5..1` deletes all versions between 1 and 5
+* `1,4,3` deletes those specific individual datastream versions
+
+Example: `drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=MODS --versions=1.. --pid_file=/tmp/ds_versions_delete.txt`
+
 Note that you cannot delete the DC datastream. Fedora Commons requires that each object has a DC datastream.
 
 ### Exporting datastreams

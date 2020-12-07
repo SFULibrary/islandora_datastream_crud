@@ -52,7 +52,7 @@ function islandora_datastream_crud_retrieve_datastream($pid, $dsid, $dir) {
   if (!islandora_object_load($pid)) {
     drush_set_error('OBJECT_DOES_NOT_EXIST',
       dt('The specified object (!pid) does not exist or is not accessible.',
-      array('!pid' => $pid)));
+        array('!pid' => $pid)));
     return FALSE;
   }
   else {
@@ -147,7 +147,7 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
   if (!islandora_object_load($pid)) {
     drush_set_error('OBJECT_DOES_NOT_EXIST',
       dt('The specified object (!pid) does not exist or is not accessible.',
-      array('!pid' => $pid)));
+        array('!pid' => $pid)));
     return FALSE;
   }
   else {
@@ -210,11 +210,15 @@ function islandora_datastream_crud_push_datastream($ds_path, $regenerate_dc = FA
  *   The PID of the object to delete the datastream from.
  * @param string $dsid
  *   The ID of the datastream to delete.
+ * @param array $versions
+ *   An array containing either versions or a range
+ *   'versions' => array of version numbers
+ *   'range' => array with starting and ending version numbers
  *
  * @return bool
  *   TRUE if the deletion was successful, FALSE if not.
  */
-function islandora_datastream_crud_delete_datastream($pid, $dsid) {
+function islandora_datastream_crud_delete_datastream($pid, $dsid, $versions = array()) {
   module_load_include('inc', 'islandora', 'includes/utilities');
   if (!islandora_is_valid_pid($pid)) {
     drush_set_error('PID_IS_INVALID', dt('The PID (!pid) is not valid.',
@@ -238,19 +242,58 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid) {
       return FALSE;
     }
 
-    try {
-      if ($object->purgeDatastream($dsid)) {
-        drush_log(dt("!dsid datastream purged from object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
-        islandora_datastream_crud_write_crudlog($pid, $dsid, 'deleted');
-        return TRUE;
+    if($versions) {
+      $datastream = $object[$dsid];
+      if(!$datastream->versionable) {
+        drush_log(dt("Datastream versions were specified, but !dsid datastream is not versionable in object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'datastream not versionable');
+        return FALSE;
       }
+      $max_version = $datastream->count() - 1;
+      if (!empty($versions['range'])) {
+        $versions['versions'] = [];
+        $versions['range']['end'] = min($versions['range']['end'], $max_version);
+        for ($i = $versions['range']['start']; $i <= $versions['range']['end']; $i++) {
+          $versions['versions'][] = $i;
+        }
+      }
+      if (!empty($versions['versions'])) {
+        // Sort versions from high to low.
+        arsort($versions['versions']);
+        foreach ($versions['versions'] as $version) {
+          if (isset($datastream[$version])) {
+            try {
+              unset($datastream[$version]);
+              drush_log(dt("Version !version of !dsid datastream purged from object !pid", array('!version' => $version, '!dsid' => $dsid, '!pid' => $pid)), 'ok');
+              islandora_datastream_crud_write_crudlog($pid, $dsid, 'version deleted');
+            } catch (Exception $e) {
+              drupal_set_message(t('Error deleting version %v of %s datastream from object %o %e', [
+                '%v' => $version,
+                '%s' => $dsid,
+                '%o' => $object->label,
+                '%e' => $e->getMessage(),
+              ]), 'error');
+            }
+          }
+        }
+      }
+      return TRUE;
     }
-    catch (Exception $e) {
-      drush_log(dt("Error purging !dsid datastream from object !pid; details below.",
-        array('!dsid' => $dsid, '!pid' => $pid)), 'error');
-      drush_log($e->getMessage(), 'error');
-      islandora_datastream_crud_write_crudlog($pid, $dsid, 'not deleted');
-      return FALSE;
+    else {
+      try {
+        if ($object->purgeDatastream($dsid)) {
+          drush_log(dt("!dsid datastream purged from object !pid", array('!dsid' => $dsid, '!pid' => $pid)), 'ok');
+          islandora_datastream_crud_write_crudlog($pid, $dsid, 'deleted');
+          return TRUE;
+        }
+      }
+      catch (Exception $e) {
+        drush_log(dt("Error purging !dsid datastream from object !pid; details below.",
+          array('!dsid' => $dsid, '!pid' => $pid)), 'error');
+        drush_log($e->getMessage(), 'error');
+        islandora_datastream_crud_write_crudlog($pid, $dsid, 'not deleted');
+        return FALSE;
+      }
     }
   }
 }
@@ -265,6 +308,7 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid) {
  */
 function islandora_datastream_crud_update_object_properties($object, $props) {
   if (isset($props['state'])) {
+    $pid = $object->id;
     if ($props['state'] != $object->state) {
       $object->state = $props['state'];
       drush_log(dt("State for object !pid updated to !state", array('!pid' => $object->id, '!state' => $props['state'])), 'ok');
@@ -402,8 +446,8 @@ function islandora_datastream_crud_regenerate_dc($object, $source_dsid) {
   }
   catch (Exception $e) {
     drush_log(dt("DC cannot be regenerated for !pid from its !dsid datastream because of an XSLT problem; details below",
-      array('!dsid' => $dsid, '!pid' => $object->id)), 'error');
-    islandora_datastream_crud_write_crudlog($object->id, $dsid, 'DC not regenerated');
+      array('!dsid' => $source_dsid, '!pid' => $object->id)), 'error');
+    islandora_datastream_crud_write_crudlog($object->id, $source_dsid, 'DC not regenerated');
     drush_log($e->getMessage(), 'error');
     return FALSE;
   }
@@ -549,4 +593,47 @@ function islandora_datastream_crud_read_version_data_log($path) {
   else {
     return FALSE;
   }
+}
+
+function islandora_datastream_crud_parse_versions_option($versions) {
+  $result = [];
+  $range_delimited = strpos($versions, '..');
+  if($range_delimited === FALSE) {
+    $versions = drupal_explode_tags($versions);
+    foreach($versions as $version) {
+      if(is_numeric($version)) {
+        $result['versions'][] = (int) $version;
+      }
+      else {
+        drush_set_error('VERSION_NUMBER_NOT_VALID', NULL, dt('Datastream version number !version is not valid.', array('!version' => $version)));
+        drupal_exit();
+      }
+    }
+  }
+  else {
+    preg_match("/(?<start>\S*)\.\.(?<end>\S*)/", $versions, $matches);
+    $matches = array_filter($matches);
+    if ((isset($matches['start']) && !is_numeric($matches['start'])) || (isset($matches['end']) && !is_numeric($matches['end']))) {
+      drush_set_error('VERSION_RANGE_NOT_VALID', NULL, dt('Datastream version range includes an invalid start or end value.'));
+      drupal_exit();
+    }
+
+    if (isset($matches['start']) || isset($matches['end'])) {
+      if (isset($matches['start']) && isset($matches['end'])) {
+        // Both ends of the range were provided.
+        $result['range']['start'] = (int) min($matches['start'], $matches['end']);
+        $result['range']['end'] = (int) max($matches['start'], $matches['end']);
+      }
+      else {
+        // Only one end of the range was provided, so the "start" and "end" keys matter.
+        $result['range']['start'] = !empty($matches['start']) ? (int) $matches['start'] : 0;
+        $result['range']['end'] = !empty($matches['end']) ? (int) $matches['end'] : 999999;
+      }
+    }
+    else {
+      drush_set_error('VERSION_RANGE_NOT_VALID', NULL, dt('Datastream version range is not valid.'));
+      drupal_exit();
+    }
+  }
+  return $result;
 }

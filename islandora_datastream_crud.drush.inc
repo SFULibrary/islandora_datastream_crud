@@ -138,6 +138,8 @@ function islandora_datastream_crud_drush_command() {
     'description' => 'Delete datastreams.',
     'examples' => array(
       'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --pid_file=/tmp/delete_foo_from_these_objects.txt',
+      'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --versions="1,2" --pid_file=/tmp/delete_foo_from_these_objects.txt',
+      'drush islandora_datastream_crud_delete_datastreams --user=admin --dsid=FOO --versions="1.." --pid_file=/tmp/delete_foo_from_these_objects.txt',
     ),
     'options' => array(
       'pid_file' => array(
@@ -147,6 +149,9 @@ function islandora_datastream_crud_drush_command() {
       'dsid' => array(
         'description' => 'Datastream ID.',
         'required' => TRUE,
+      ),
+      'versions' => array(
+        'description' => 'If the versions option is present, then only datastream versions so specified list will be deleted. It may be expressed as a comma-separated list of datastream version numbers that you wish to delete, or as a range of version numbers, expressed as N..N. A range can also be specified as just one number, with the ".." after, which means delete this version and higher, or with the ".." before, which means delete version zero up to and including this version.'
       ),
       'datastreams_crud_log' => array(
         'description' => 'Optional. Absolute path to the CRUD log. If present, the PID, DSID, and a message will be written to the specified file.',
@@ -455,7 +460,8 @@ function drush_islandora_datastream_crud_push_datastreams() {
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
   // If --pid_file was specified, only push to objects that have a PID there.
   if (drush_get_option('pid_file')) {
-    $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
+    $pid_file = drush_get_option('pid_file');
+    $pids = islandora_datastream_crud_read_pid_file($pid_file);
     if (!count($pids)) {
       drush_set_error('NO_PIDS_IN_PID_FILE',
       dt('The specified PID file (!pid_file) contains no PIDS.',
@@ -510,20 +516,34 @@ function drush_islandora_datastream_crud_push_datastreams() {
  */
 function drush_islandora_datastream_crud_delete_datastreams() {
   $dsid = drush_get_option('dsid');
+  $versions = drush_get_option('versions');
   if ($dsid == 'DC') {
     drush_user_abort(dt('DC is a required datastream and cannot be deleted.'));
     exit;
   }
-  if (!drush_confirm(dt("You are about to delete (purge) the !dsid " .
-    "datastream from a set of objects in your repository. This action " .
-    "cannot be undone. Do you want to want to continue?",
-    array('!dsid' => drush_get_option('dsid'))))) {
+  module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
+  if(!is_null($versions)) {
+    $confirm = dt("You are about to delete (purge) versions !versions from the !dsid " .
+      "datastream from a set of objects in your repository. This action " .
+      "cannot be undone. Do you want to continue?",
+      array('!dsid' => drush_get_option('dsid'), '!versions' => $versions));
+
+    $versions = islandora_datastream_crud_parse_versions_option($versions);
+  }
+  else {
+    $confirm = dt("You are about to delete (purge) the !dsid " .
+      "datastream from a set of objects in your repository. This action " .
+      "cannot be undone. Do you want to continue?",
+      array('!dsid' => drush_get_option('dsid')));
+  }
+
+  if (!drush_confirm($confirm)) {
     drush_user_abort(dt('Exiting, no datastreams deleted.'));
     exit;
   }
 
-  module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
-  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
+  $pid_file = drush_get_option('pid_file');
+  $pids = islandora_datastream_crud_read_pid_file($pid_file);
   if (!count($pids)) {
     drush_set_error('NO_PIDS_IN_PID_FILE',
     dt('The specified PID file (!pid_file) contains no PIDS.',
@@ -533,7 +553,7 @@ function drush_islandora_datastream_crud_delete_datastreams() {
     if (drush_get_option('pause')) {
       sleep(drush_get_option('pause'));
     }
-    islandora_datastream_crud_delete_datastream($pid, $dsid);
+    islandora_datastream_crud_delete_datastream($pid, $dsid, $versions);
   }
 }
 
@@ -542,7 +562,8 @@ function drush_islandora_datastream_crud_delete_datastreams() {
  */
 function drush_islandora_datastream_crud_generate_derivatives() {
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
-  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
+  $pid_file = drush_get_option('pid_file');
+  $pids = islandora_datastream_crud_read_pid_file($pid_file);
   $dsid = drush_get_option('source_dsid');
   if (!drush_confirm(dt("You are about to regenerate derivatives from the " .
     "!dsid datastream for !num object(s) in your repository. This action " .
@@ -595,7 +616,8 @@ function drush_islandora_datastream_crud_generate_derivatives() {
  */
 function drush_islandora_datastream_crud_update_object_properties() {
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
-  $pids = islandora_datastream_crud_read_pid_file(drush_get_option('pid_file'));
+  $pid_file = drush_get_option('pid_file');
+  $pids = islandora_datastream_crud_read_pid_file($pid_file);
 
   $confirmation_message = '';
   $props = array();
