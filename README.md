@@ -92,7 +92,7 @@ Another subset of the general workflow in which you do not fetch datastreams is 
 
 Optionally, you can also specify datastream version numbers to be deleted, either as a list of version numbers, or as a range of version numbers. This can be helpful, for example, if you want to delete all but the current version (0) of a datastream on many objects.
 
-To specify a datastream version, use the `--version=` parameter with one of the following values:
+To specify a datastream version, use the `--versions=` parameter with one of the following values:
 
 * `0` deletes version 0 (the current version of the datastream)
 * `1` deletes version 1 (the second-newest version)
