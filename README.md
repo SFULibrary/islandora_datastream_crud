@@ -238,6 +238,10 @@ Even though this module is called Islandora *Datastream* CRUD, it can also modif
 
 Updating object properties such as owner, state, and label will fire all of the 'hook_islandora_object_modified()' and related implementations enabled on your site. The effects of this are the same as if you updated an object's label or state within its Manage > Properties tab. However, Islandora Datastream CRUD lets you update the properties of a lot of objects at once, which amplifies the load on your Islandora stack compared to updating a property of a single object. TL;DR is it's proobably best to update object properties in small sets and observe any effects the update may have before moving on to updating large numbers of objects at once.
 
+# Controlling load on your Islandora server
+
+Many of Datastream CRUD's operations are fairly resource intensive. If your system experiences stress or crashes while running Datastream CRUD, you may want to use the `--pause` option, which is available in the `islandora_datastream_crud_fetch_datastreams`, `islandora_datastream_crud_push_datastreams`, `islandora_datastream_crud_delete_datastreams`, and `islandora_datastream_crud_generate_derivatives` commands. This option takes a number of seconds as its value, e.g. `--pause=2`, using PHP's `sleep()` function to pause execution for the indicated number of seconds betwen processing objects.
+
 # Maintainer
 
 * [Mark Jordan](https://github.com/mjordan)
