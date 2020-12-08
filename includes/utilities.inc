@@ -266,6 +266,11 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid, $versions = ar
               unset($datastream[$version]);
               drush_log(dt("Version !version of !dsid datastream purged from object !pid", array('!version' => $version, '!dsid' => $dsid, '!pid' => $pid)), 'ok');
               islandora_datastream_crud_write_crudlog($pid, $dsid, 'version deleted');
+              watchdog('islandora_datastream_crud', 'Version @version of @dsid datastream purged from object @pid', array(
+                '@pid' => $pid,
+                '@version' => $version,
+                '@dsid' => $dsid,
+              ), WATCHDOG_NOTICE);
             } catch (Exception $e) {
               drupal_set_message(t('Error deleting version %v of %s datastream from object %o %e', [
                 '%v' => $version,
@@ -273,6 +278,12 @@ function islandora_datastream_crud_delete_datastream($pid, $dsid, $versions = ar
                 '%o' => $object->label,
                 '%e' => $e->getMessage(),
               ]), 'error');
+              watchdog('islandora_datastream_crud', 'Error deleting version @version of @dsid datastream: @message ', array(
+                '@pid' => $pid,
+                '@version' => $version,
+                '@dsid' => $dsid,
+                '@message' => $e->getMessage(),
+              ), WATCHDOG_ERROR);
             }
           }
         }
