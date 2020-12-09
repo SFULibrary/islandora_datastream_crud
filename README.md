@@ -34,9 +34,16 @@ The `islandora_datastream_crud_fetch_pids` command provides several options for 
 * `--without_dsid`: Lets you specify the ID of a datastream that objects must not have.
 * `--solr_query`: A raw Solr query. For example, `--solr_query=*:*` will retrieve all the PIDs in your repository; `--solr_query=dc.title:foo` will retrieve all the PIDs of objects that have the string 'foo' in their DC title fields; `--solr_query="RELS_EXT_isMemberOf_uri_s:info\:fedora/dailyplanet\:1"`will retrieve all newspaper issues that are part of the newspaper "dailyplanet:1". For a more complex query, `--solr_query="RELS_EXT_isMemberOfCollection_uri_ms:info\:fedora\/ir\:citationCollection AND dc.title:citation AND -mods_genre_ms:Article"` will return all objects in the "ir:citationCollection" collection with a title containing the word "citation" but without the genre "Article".
 
-The `--collection`, `--is_member_of`, `--content_model`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--solr_query` options, if present, are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific namespace within a collection. If the `--solr_query` option is used, it overrides `--content_model'`, `--namespace`, `--with_dsid`, `--without_dsid`, and `--collection`.
+These options generate a Solr query that is used to fetch the object PIDs. If multiple options are present, they are ANDed together, so you can, for example, retrieve PIDs of objects that have a specific `--namespace` within a particular `--collection`.
+
+If the `--solr_query` option is used, it overrides all other options.
 
 You typically save the fetched PIDs to a PID file, whose path is specified using the `--pid_file` option. See 'The PID file' section below for more information.
+
+### Solr query examples
+
+* Versioned datastreams:
+  * To fetch PIDs only for objects that have datastreams with multiple versions, use the `fedora_datastream_(DSID)_ms` field. For example: `drush -u 1 islandora_datastream_crud_fetch_pids --pid_file=/home/user/verisoned_pids_to_delete.txt --solr_query="fedora_datastreams_mt:JP2 AND fedora_datastream_version_JP2_ID_ms:JP2.1"` finds all objects that have a JP2 datastream with a version 1 or higher.
 
 ## General workflow
 
