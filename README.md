@@ -79,8 +79,8 @@ This is a real step. Skip it at your own peril, doom, and ruin.
 ### Step 5
 Push the updated datasteam files back to the objects they belong to.
 
-* The islandora_datastream_crud_push_datastreams command does not require a pid list
-* The directory of updated files to push is referenced with the argument `datastreams_source_directory`
+* The `islandora_datastream_crud_push_datastreams` command does not require a pid list.
+* The directory of updated files to push is referenced with the argument `datastreams_source_directory`.
 
 As an example: you have pulled 100 MODS files from the MODS datastream of 100 records and updated the files to your satisfaction - the files are in a directory `clean_mods` pushing these back to their records may be done with this command: `drush islandors_datastream_crud_push_datastreams --user=admin --datastreams_source_directory=clean_mods`
 
