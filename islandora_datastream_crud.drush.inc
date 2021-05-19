@@ -346,15 +346,17 @@ function drush_islandora_datastream_crud_fetch_pids() {
   }
   else {
     foreach ($pids as $pid) {
+      if (islandora_namespace_accessible($pid)) {
+        if (drush_get_option('pid_file')) {
+          file_put_contents(drush_get_option('pid_file'), $pid . PHP_EOL, FILE_APPEND);
+        }
+        else {
+          drush_print($pid);
+        }
+      }
       if (drush_get_option('pid_file')) {
-        file_put_contents(drush_get_option('pid_file'), $pid . PHP_EOL, FILE_APPEND);
+        drush_log(dt("PIDS written to file !pid_file", array('!pid_file' => drush_get_option('pid_file'))), 'ok');
       }
-      else {
-        drush_print($pid);
-      }
-    }
-    if (drush_get_option('pid_file')) {
-      drush_log(dt("PIDS written to file !pid_file", array('!pid_file' => drush_get_option('pid_file'))), 'ok');
     }
   }
 }
