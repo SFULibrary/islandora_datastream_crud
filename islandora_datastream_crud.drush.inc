@@ -345,6 +345,7 @@ function drush_islandora_datastream_crud_fetch_pids() {
       dt('Sorry, no PIDS were found.'));
   }
   else {
+    module_load_include('inc', 'islandora', 'includes/utilities');
     foreach ($pids as $pid) {
       if (islandora_namespace_accessible($pid)) {
         if (drush_get_option('pid_file')) {
