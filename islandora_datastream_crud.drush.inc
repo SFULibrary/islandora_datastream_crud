@@ -354,9 +354,9 @@ function drush_islandora_datastream_crud_fetch_pids() {
         else {
           drush_print($pid);
         }
-      }
-      if (drush_get_option('pid_file')) {
-        drush_log(dt("PIDS written to file !pid_file", array('!pid_file' => drush_get_option('pid_file'))), 'ok');
+        if (drush_get_option('pid_file')) {
+          drush_log(dt("PIDS written to file !pid_file", array('!pid_file' => drush_get_option('pid_file'))), 'ok');
+        }
       }
     }
   }
