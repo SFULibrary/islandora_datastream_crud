@@ -360,7 +360,10 @@ function drush_islandora_datastream_crud_fetch_pids() {
     if (drush_get_option('pid_file')) {
       drush_log(dt("PIDS written to file !pid_file", array('!pid_file' => drush_get_option('pid_file'))), 'ok');
     }
-    print($filter_counter . t(" namespace-accessible objects found.\n"));
+    $restrictions = variable_get('islandora_namespace_restriction_enforced', FALSE);
+    if ($restrictions == TRUE) {
+      print($filter_counter . t(" namespace-accessible objects found.\n"));
+    }
   }
 }
 
