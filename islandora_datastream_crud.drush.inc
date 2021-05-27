@@ -339,22 +339,30 @@ function drush_islandora_datastream_crud_fetch_pids() {
   // Get the PIDs from the Solr query.
   module_load_include('inc', 'islandora_datastream_crud', 'includes/utilities');
   $pids = islandora_datastream_crud_query_solr($query);
-
+  $filter_counter = 0;
   if (!count($pids) || !$pids) {
     drush_set_error('NO_PIDS_FOUND',
       dt('Sorry, no PIDS were found.'));
   }
   else {
+    module_load_include('inc', 'islandora', 'includes/utilities');
     foreach ($pids as $pid) {
-      if (drush_get_option('pid_file')) {
-        file_put_contents(drush_get_option('pid_file'), $pid . PHP_EOL, FILE_APPEND);
-      }
-      else {
-        drush_print($pid);
+      if (islandora_namespace_accessible($pid)) {
+        $filter_counter++;
+        if (drush_get_option('pid_file')) {
+          file_put_contents(drush_get_option('pid_file'), $pid . PHP_EOL, FILE_APPEND);
+        }
+        else {
+          drush_print($pid);
+        }
       }
     }
     if (drush_get_option('pid_file')) {
       drush_log(dt("PIDS written to file !pid_file", array('!pid_file' => drush_get_option('pid_file'))), 'ok');
+    }
+    $restrictions = variable_get('islandora_namespace_restriction_enforced', FALSE);
+    if ($restrictions == TRUE) {
+      print($filter_counter . t(" namespace-accessible objects found.\n"));
     }
   }
 }

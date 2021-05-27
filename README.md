@@ -40,6 +40,8 @@ If the `--solr_query` option is used, it overrides all other options.
 
 You typically save the fetched PIDs to a PID file, whose path is specified using the `--pid_file` option. See 'The PID file' section below for more information.
 
+If your site has namespace restrictions set in admin/islandora/configure, PID results will be filtered according to allowed namespaces. 
+
 ### Solr query examples
 
 * Versioned datastreams:
