@@ -534,8 +534,16 @@ function islandora_datastream_crud_parse_dsfilename($filepath) {
   // The default case is namesapce_number_DSID.
   if (substr_count($filename, '_') == 2) {
     list($namespace, $number, $dsid) = explode('_', $filename);
+dd("Something happening");
     return array($namespace . ':' . $number, $dsid);
   }
+  // Covering underscores in the DSID
+  elseif (substr_count($filename, '_') == 3) {
+    list($namespace, $number, $dsid) = explode('_', $filename, 3);
+dd('DEBUG: ' . $namespace . ':' . $number . " " . $dsid);
+    return array($namespace . ':' . $number, $dsid);
+  }
+
   else {
     list($pid, $dsid) = explode($filename_separator, $filename);
     return array($pid, $dsid);
