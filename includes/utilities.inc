@@ -536,6 +536,12 @@ function islandora_datastream_crud_parse_dsfilename($filepath) {
     list($namespace, $number, $dsid) = explode('_', $filename);
     return array($namespace . ':' . $number, $dsid);
   }
+  // Covering underscores in the DSID
+  elseif (substr_count($filename, '_') == 3) {
+    list($namespace, $number, $dsid) = explode('_', $filename, 3);
+    return array($namespace . ':' . $number, $dsid);
+  }
+
   else {
     list($pid, $dsid) = explode($filename_separator, $filename);
     return array($pid, $dsid);
