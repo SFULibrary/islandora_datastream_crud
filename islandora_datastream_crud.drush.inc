@@ -45,6 +45,9 @@ function islandora_datastream_crud_drush_command() {
       'pid_file' => array(
         'description' => 'Absolute path to the file where you want the PID list to be saved. If absent, PIDs will be written to STDOUT.',
       ),
+      'extract_label' => array(
+        'description' => 'Add object label to PID list.' ,
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );

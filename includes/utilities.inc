@@ -28,7 +28,20 @@ function islandora_datastream_crud_query_solr($query) {
     drush_log(dt('!num matching objects found.',
       array('!num' => $query_processor->islandoraSolrResult['response']['numFound'])), 'ok');
     foreach ($query_processor->islandoraSolrResult['response']['objects'] as $object) {
-      $pids[] = $object['solr_doc']['PID'];
+      $pid = $object['solr_doc']['PID'];
+      if (drush_get_option('extract_label')) {
+        $repository_object = islandora_object_load($pid);
+        if (!$repository_object) {
+          $current_label = "";
+        }
+        else {
+          $current_label = $repository_object->label;
+        }
+        $pids[] = $pid."|".$current_label;
+      }
+      else {
+        $pids[] = $pid;
+      }
     }
   }
   return $pids;
